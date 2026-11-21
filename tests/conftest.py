@@ -11,6 +11,10 @@ os.environ["RECEIVABLES_NO_AUTOAPP"] = "1"
 # Tests never use live credentials, even if a developer's .env has them.
 for k in ("CASHFREE_CLIENT_ID", "CASHFREE_CLIENT_SECRET", "SARVAM_API_KEY", "RELAY_WEBHOOK_URL"):
     os.environ[k] = ""
+# Workflow tests make many quick calls; security tests tighten these limits explicitly.
+for k in ("RL_LOGIN_PER_MIN", "RL_ASSISTANT_PER_MIN", "RL_SPEECH_PER_MIN", "RL_PROVIDER_PER_MIN", "RL_MONEY_PER_MIN",
+          "RL_IMPORT_PER_MIN", "RL_WEBHOOK_PER_MIN", "RL_READ_PER_MIN"):
+    os.environ[k] = "100000"
 
 from fastapi.testclient import TestClient  # noqa: E402
 

@@ -1,6 +1,7 @@
 """HTTP API + operator console."""
 from __future__ import annotations
 
+import html
 import json
 import logging
 import os
@@ -8,6 +9,7 @@ import time
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
+from fastapi.concurrency import run_in_threadpool
 from fastapi.staticfiles import StaticFiles
 
 from . import approvals, auth, coordinator, importer, webhooks
@@ -18,11 +20,14 @@ from .money import AmountError, format_inr, parse_rupees_to_paise
 from .policy import load_facts
 from .providers.cashfree import CashfreeFixture, ProviderError, sign_webhook
 from .providers.sarvam import SarvamError
+from .help_texts import HELP, LANGS as HELP_LANGS
 from .queue import Reconciler, build_queue, reconcile_once
+from .security import Security, SecurityMiddleware, client_ip, is_https
 from .specialists import HandoffDenied, evaluate, handoff
 
 log = logging.getLogger("receivables")
 COOKIE = "rcv_session"
+MAX_UTTERANCE_CHARS = 500   # one spoken or typed turn; keeps model cost per request bounded
 
 TENANTS = [
     ("lender_demo", "Demo Finance - synthetic borrower book", "borrower",
@@ -45,8 +50,15 @@ def seed(ctx: Ctx) -> None:
 def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI:
     ctx = ctx or Ctx(default_settings)
     seed(ctx)
-    app = FastAPI(title="Receivables verification queue")
+    docs = os.environ.get("ENABLE_API_DOCS") == "1"   # off by default: no public schema of internal routes
+    app = FastAPI(title="Receivables verification queue", docs_url="/docs" if docs else None,
+                  redoc_url=None, openapi_url="/openapi.json" if docs else None)
     app.state.ctx = ctx
+    sec = Security()
+    app.state.security = sec
+    allowed = {o.rstrip("/") for o in (ctx.settings.public_base_url, "http://localhost:8000", "http://127.0.0.1:8000",
+                                       "http://localhost:5173", "http://127.0.0.1:5173") if o}
+    app.add_middleware(SecurityMiddleware, security=sec, allowed_origins=allowed)
     if start_reconciler:
         @app.on_event("startup")
         def _start():
@@ -75,11 +87,16 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
     @app.post("/api/login")
     async def login(request: Request):
         body = await request.json()
-        token = auth.login(ctx.db, body.get("username", ""), body.get("password", ""))
+        username = str(body.get("username", ""))[:64]
+        sec.limit("login", client_ip(request))
+        sec.logins.check(username)
+        token = auth.login(ctx.db, username, str(body.get("password", ""))[:256])
         if not token:
+            sec.logins.failed(username)
             raise HTTPException(401, "invalid credentials")
+        sec.logins.succeeded(username)
         resp = JSONResponse({"ok": True})
-        resp.set_cookie(COOKIE, token, httponly=True, samesite="strict", max_age=12 * 3600)
+        resp.set_cookie(COOKIE, token, httponly=True, samesite="strict", max_age=12 * 3600, secure=is_https(request))
         return resp
 
     @app.post("/api/logout")
@@ -98,6 +115,7 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
     # ---------------------------------------------------------------- import + queue
     @app.post("/api/import")
     async def do_import(file: UploadFile = File(...), op: auth.Operator = Depends(operator)):
+        sec.limit("import", op.id)
         content = await file.read()
         if len(content) > 5_000_000:
             raise HTTPException(413, "file too large")
@@ -133,14 +151,29 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
             raise HTTPException(404, "not found")
         lang = lang if lang in ("hi-IN", "ta-IN", "en-IN") else "en-IN"
         d = evaluate(ctx, op.merchant_id, case_id)
-        text = coordinator.explain(lang, acct["external_ref"], d)
+        return _spoken(op, coordinator.explain(lang, acct["external_ref"], d), lang)
+
+    def _spoken(op, text: str, lang: str) -> dict:
+        """Text plus Sarvam TTS audio; rate limited, budgeted, and free when cached."""
+        sec.limit("speech", op.id)
         out = {"text": text, "language": lang, "audio_b64": None}
         if ctx.sarvam:
+            if not ctx.sarvam.tts_cached(text, lang):
+                sec.budget.charge(op.merchant_id, 1)
             try:
                 out["audio_b64"] = ctx.sarvam.tts(text, lang)["audio_b64"]
             except SarvamError as e:
                 out["tts_error"] = str(e)[:200]
         return out
+
+    @app.get("/api/help/{key}")
+    def spoken_help(key: str, lang: str = "en-IN", op: auth.Operator = Depends(operator)):
+        """Explain a dashboard action aloud. Only fixed help texts can be spoken; no free text reaches TTS."""
+        entry = HELP.get(key)
+        if not entry:
+            raise HTTPException(404, "unknown help topic")
+        lang = lang if lang in HELP_LANGS else "en-IN"
+        return _spoken(op, entry[lang], lang)
 
     @app.get("/api/cases/{case_id}")
     def case(case_id: str, op: auth.Operator = Depends(operator)):
@@ -180,11 +213,13 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
 
     @app.post("/api/cases/{case_id}/refresh")
     def refresh(case_id: str, op: auth.Operator = Depends(operator)):
+        sec.limit("provider", op.id)
         r = handoff(ctx, op.merchant_id, case_id, "evidence", "refresh_account", actor=f"operator:{op.username}")
         return {"refresh": r.as_dict(), "decision": evaluate(ctx, op.merchant_id, case_id).as_dict()}
 
     @app.post("/api/cases/{case_id}/request-link")
     def request_link(case_id: str, op: auth.Operator = Depends(operator)):
+        sec.limit("money", op.id)
         r = handoff(ctx, op.merchant_id, case_id, "outreach", "propose_payment_link", actor=f"operator:{op.username}",
                     requested_by=f"operator:{op.username}", requested_via="ui")
         return r.as_dict()
@@ -197,11 +232,13 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
 
     @app.post("/api/approvals/{approval_id}/approve")
     async def approve(approval_id: str, request: Request, op: auth.Operator = Depends(operator)):
+        sec.limit("money", op.id)
         body = await request.json()
         return approvals.approve(ctx, op, approval_id, body.get("confirm") or {}, screen_channel(request))
 
     @app.post("/api/approvals/{approval_id}/execute")
     async def execute(approval_id: str, request: Request, op: auth.Operator = Depends(operator)):
+        sec.limit("money", op.id)
         body = await request.json()
         res = approvals.execute(ctx, op, approval_id, body.get("token", ""), screen_channel(request))
         build_queue(ctx, op.merchant_id)
@@ -211,11 +248,21 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
     @app.post("/api/coordinator/text")
     async def coord_text(request: Request, op: auth.Operator = Depends(operator)):
         body = await request.json()
-        text = (body.get("text") or "").strip()[:2000]
+        text = (body.get("text") or "").strip()
         if not text:
             raise HTTPException(400, "empty")
-        return coordinator.process(ctx, op, text, language_hint=body.get("language"), via="text",
-                                   conversation_id=body.get("conversation_id"), account_hint=body.get("account_id"))
+        if len(text) > MAX_UTTERANCE_CHARS:
+            raise HTTPException(413, f"Please keep it under {MAX_UTTERANCE_CHARS} characters.")
+        sec.limit("assistant", op.id)
+        if ctx.sarvam:
+            sec.budget.charge(op.merchant_id, 2)          # chat tool call + spoken reply
+        sec.inflight.acquire(op.id)
+        try:
+            return await run_in_threadpool(
+                coordinator.process, ctx, op, text, language_hint=body.get("language"), via="text",
+                conversation_id=body.get("conversation_id"), account_hint=body.get("account_id"))
+        finally:
+            sec.inflight.release(op.id)
 
     @app.post("/api/coordinator/voice")
     async def coord_voice(audio: UploadFile = File(...), language: str = Form("unknown"),
@@ -223,20 +270,31 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
                           op: auth.Operator = Depends(operator)):
         if not ctx.sarvam:
             raise HTTPException(503, "Sarvam is not configured (SARVAM_API_KEY missing): voice is blocked; use text.")
+        sec.limit("assistant", op.id)
         data = await audio.read()
-        if len(data) > 4_000_000:
-            raise HTTPException(413, "audio too long; keep under 30 seconds")
-        t0 = time.time()
+        if len(data) > 1_500_000:
+            raise HTTPException(413, "Audio too long. Please keep it under 30 seconds.")
+        if len(data) < 1_000:
+            raise HTTPException(400, "No speech recorded.")
+        sec.budget.charge(op.merchant_id, 3)              # speech-to-text + chat tool call + spoken reply
+        sec.inflight.acquire(op.id)
         try:
-            stt = ctx.sarvam.stt(data, audio.filename or "speech.webm", audio.content_type or "audio/webm",
-                                 language if language in ("hi-IN", "ta-IN", "en-IN") else "unknown")
-        except SarvamError as e:
-            raise HTTPException(502, f"speech-to-text failed: {e}")
-        stt["latency_ms"] = int((time.time() - t0) * 1000)
-        if not stt["transcript"].strip():
-            return {"transcript": "", "reply": "I did not catch that. Please repeat.", "stt": stt}
-        return coordinator.process(ctx, op, stt["transcript"], language_hint=stt.get("language_code"), via="voice",
-                                   conversation_id=conversation_id or None, stt=stt, account_hint=account_id or None)
+            t0 = time.time()
+            try:
+                stt = await run_in_threadpool(ctx.sarvam.stt, data, audio.filename or "speech.webm",
+                                              audio.content_type or "audio/webm",
+                                              language if language in ("hi-IN", "ta-IN", "en-IN") else "unknown")
+            except SarvamError as e:
+                raise HTTPException(502, f"speech-to-text failed: {e}")
+            stt["latency_ms"] = int((time.time() - t0) * 1000)
+            if not stt["transcript"].strip():
+                return {"transcript": "", "reply": "I did not catch that. Please repeat.", "stt": stt}
+            transcript = stt["transcript"][:MAX_UTTERANCE_CHARS]
+            return await run_in_threadpool(
+                coordinator.process, ctx, op, transcript, language_hint=stt.get("language_code"), via="voice",
+                conversation_id=conversation_id or None, stt=stt, account_hint=account_id or None)
+        finally:
+            sec.inflight.release(op.id)
 
     # ---------------------------------------------------------------- provider callbacks
     @app.post("/webhooks/cashfree")
@@ -254,6 +312,7 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
 
     @app.post("/api/sim/pay")
     async def sim_pay(request: Request, op: auth.Operator = Depends(operator)):
+        sec.limit("money", op.id)
         body = await request.json()
         cf = _fixture(op)
         link = ctx.db.one("SELECT * FROM payment_links WHERE link_id=? AND merchant_id=?", (body.get("link_id"), op.merchant_id))
@@ -279,11 +338,12 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
     @app.get("/sim/pay/{link_id}", response_class=HTMLResponse)
     def sim_page(link_id: str):
         return HTMLResponse(f"<!doctype html><title>Simulated checkout</title><body style='font-family:sans-serif;padding:2rem'>"
-                            f"<h2>SIMULATED checkout (fixture mode)</h2><p>Link <code>{link_id}</code> is a fixture link, not a "
+                            f"<h2>SIMULATED checkout (fixture mode)</h2><p>Link <code>{html.escape(link_id)}</code> is a fixture link, not a "
                             "Cashfree sandbox link. Use the 'Simulate payment' button in the operator console.</p></body>")
 
     @app.post("/api/reconcile")
     def reconcile(op: auth.Operator = Depends(operator)):
+        sec.limit("provider", op.id)
         return {"checked": reconcile_once(ctx)}
 
     @app.get("/api/integrations")
