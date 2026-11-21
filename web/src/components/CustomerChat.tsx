@@ -220,7 +220,10 @@ export function CustomerChat({ q, onChanged }: { q: Queue | null; onChanged: () 
                     </div>
                   )}
                   {m.audioUrl && <audio controls src={m.audioUrl} className="bubble-audio" />}
-                  {m.imageUrl && <img src={m.imageUrl} alt={t.photo} className="bubble-img" />}
+                  {m.imageUrl && (
+                    <img src={m.imageUrl} alt={t.photo} className="bubble-img"
+                      onLoad={(e) => { const box = e.currentTarget.closest('.chat-scroll'); if (box) box.scrollTop = box.scrollHeight }} />
+                  )}
                   {m.via === 'image' ? (
                     !m.pending && m.text && (
                       <div className="ocr-read">

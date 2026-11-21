@@ -2016,3 +2016,20 @@ code {
   border-radius: var(--radius-lg);
   background: var(--raised);
 }
+
+/* chat: the one grid row must be allowed to shrink, or tall content (photos, OCR text) pushes past the frame */
+.chat-app {
+  grid-template-rows: minmax(0, 1fr);
+  height: max(420px, calc(100vh - 230px));
+  min-height: 0;
+}
+.ocr-read {
+  max-height: 220px;
+  overflow-y: auto;
+}
+@media (max-width: 760px) {
+  .chat-app {
+    grid-template-rows: auto minmax(0, 1fr);
+    height: auto;
+  }
+}
