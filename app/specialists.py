@@ -332,6 +332,24 @@ def hold_outreach(ctx: Ctx, merchant_id: str, case_id: str, reason: str) -> Hand
     return HandoffResult(case_id, "outreach", "hold_outreach", "ok", f"Outreach held: {reason}", checked_at=iso())
 
 
+def email_template_fields(p: dict) -> dict:
+    """Pre-written values for Relay's Cashfree Communication template `merchant.generalTextEmailCustom`
+    (variables: subject, title, shortMessage, upperBodyMessage, lowerBodyMessage). Mapped 1:1 in Relay."""
+    lower = (f"Test recipient {p['recipient']}, language {p['language']}. Send once; do not create another link. "
+             + p.get("disclosure", "")).strip()
+    return {
+        # Relay's Data Selector exposes `output › data`; one readable string there carries the whole case.
+        "data": (f"Case {p['account_ref']}: {p['approved_amount_inr']} verified, undisputed and due. "
+                 f"An operator approved one payment link on screen: {p['link_url']} . {lower}"),
+        "subject": f"[TEST] Payment link approved: {p['account_ref']} {p['approved_amount_inr']}",
+        "title": "Approved payment link (synthetic test data)",
+        "shortMessage": f"{p['account_ref']}: {p['approved_amount_inr']} verified due",
+        "upperBodyMessage": (f"Case {p['account_ref']} has a verified, undisputed amount of {p['approved_amount_inr']}. "
+                             f"An operator approved one payment link on screen: {p['link_url']}"),
+        "lowerBodyMessage": lower,
+    }
+
+
 def deliver_link(ctx: Ctx, merchant_id: str, case_id: str, link_id: str) -> HandoffResult:
     """Send the approved link through exactly one path (Relay webhook, else explicit manual step)."""
     link = ctx.db.one("SELECT * FROM payment_links WHERE link_id=? AND merchant_id=? AND account_id=?",
@@ -353,6 +371,7 @@ def deliver_link(ctx: Ctx, merchant_id: str, case_id: str, link_id: str) -> Hand
         packet["disclosure"] = (f"This call/message is from {s.lender_display_name} about your loan account and may be "
                                 f"recorded. For complaints: {s.grievance_contact}.")
         packet["contact_window"] = f"{s.call_window_start_hour}:00-{s.call_window_end_hour}:00 IST"
+    packet.update(email_template_fields(packet))
     res = ctx.relay.deliver(packet, idem)
     ctx.db.x("INSERT INTO outbox (id, merchant_id, account_id, action, idem_key, channel, status, request_json, response_json, created_at)"
              " VALUES (?,?,?,?,?,?,?,?,?,?)", (new_id("ob"), merchant_id, case_id, "deliver_link", idem,

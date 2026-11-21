@@ -81,8 +81,11 @@ def sarvam():
 
 def relay():
     r = RelayAdapter(settings.relay_webhook_url, settings.relay_webhook_secret)
-    packet = {"case_id": "smoke", "allowed_action": "operator_alert_test", "test_mode": True,
-              "message": "Smoke test from receivables queue (synthetic)"}
+    from app.specialists import email_template_fields
+    packet = {"case_id": "smoke", "account_ref": "L-SMOKE", "link_id": "smoke", "allowed_action": "operator_alert_test",
+              "link_url": "https://payments-test.cashfree.com/links/smoke", "approved_amount_inr": "₹1",
+              "amount_paise": 100, "recipient": "9999999999", "language": "en-IN", "test_mode": True}
+    packet.update(email_template_fields(packet))
     res = r.deliver(packet, f"smoke-{uuid.uuid4().hex[:8]}")
     if res["mode"] == "manual":
         return {"status": "blocked", "reason": "RELAY_WEBHOOK_URL not set; Relay documents no public run API. Manual Test-flow step required.",

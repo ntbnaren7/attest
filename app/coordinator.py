@@ -90,6 +90,7 @@ T = {
         "account_ambiguous": "Which account: {cands}?", "not_found": "That account is not in your book.",
         "queue_top": "Contact first: {items}.", "queue_empty": "No account is eligible for contact right now.",
         "verified_now": "Checked with the provider: {summary}.",
+        "LINK_AMOUNT_MISMATCH": "{ref}: the open payment link no longer matches the amount due ({amt}). No reminder until a person decides.",
     },
     "hi-IN": {
         "DUE_UNDISPUTED": "{ref} पर {amt} सत्यापित बकाया है, कोई विवाद या दावा नहीं है। संपर्क किया जा सकता है।",
@@ -118,6 +119,7 @@ T = {
         "account_ambiguous": "कौन सा खाता: {cands}?", "not_found": "यह खाता आपकी सूची में नहीं है।",
         "queue_top": "पहले इनसे संपर्क करें: {items}।", "queue_empty": "अभी कोई खाता संपर्क के योग्य नहीं है।",
         "verified_now": "प्रदाता से जाँचा: {summary}।",
+        "LINK_AMOUNT_MISMATCH": "{ref}: खुला भुगतान लिंक अब बकाया राशि ({amt}) से मेल नहीं खाता। किसी व्यक्ति के तय करने तक कोई रिमाइंडर नहीं।",
     },
     "ta-IN": {
         "DUE_UNDISPUTED": "{ref} கணக்கில் {amt} சரிபார்க்கப்பட்ட நிலுவை உள்ளது; மறுப்போ கோரிக்கையோ இல்லை. தொடர்பு கொள்ளலாம்.",
@@ -146,6 +148,7 @@ T = {
         "account_ambiguous": "எந்தக் கணக்கு: {cands}?", "not_found": "இந்தக் கணக்கு உங்கள் பட்டியலில் இல்லை.",
         "queue_top": "முதலில் தொடர்பு கொள்ள வேண்டியவர்கள்: {items}.", "queue_empty": "இப்போது தொடர்பு கொள்ளத் தகுதியான கணக்கு இல்லை.",
         "verified_now": "வழங்குநரிடம் சரிபார்த்தோம்: {summary}.",
+        "LINK_AMOUNT_MISMATCH": "{ref}: திறந்த கட்டண இணைப்பு இப்போது நிலுவைத் தொகையுடன் ({amt}) பொருந்தவில்லை. ஒருவர் முடிவு செய்யும் வரை நினைவூட்டல் இல்லை.",
     },
 }
 CLAIM_WORDS = {
@@ -322,6 +325,9 @@ def process(ctx: Ctx, operator, text: str, *, language_hint: str | None = None, 
         if ex.amount_paise is not None and rb.amount_paise is not None and ex.amount_paise != rb.amount_paise:
             ex.clarification_question = ex.clarification_question or "amount"
             ex.amount_candidates = sorted({ex.amount_paise, rb.amount_paise})
+    # Script and Hinglish detection is deterministic; the model's label only fills in when we found plain English.
+    if lang != "en-IN":
+        ex.language = lang
     turn["extraction"] = {k: v for k, v in ex.__dict__.items() if k != "model_call"}
     turn["model_call"] = ex.model_call or None
     db.trace(m_id, "extraction", ex.source, conversation_id=conv,

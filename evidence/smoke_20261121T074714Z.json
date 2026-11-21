@@ -1,0 +1,52 @@
+{
+ "cashfree": {
+  "base_url": "https://sandbox.cashfree.com/pg",
+  "api_version": "2026-01-01",
+  "create_link": {
+   "link_id": "smoke_accac37134",
+   "status": "ACTIVE",
+   "amount_paise": 100,
+   "link_url": "https://payments-test.cashfree.com/links/Dbblkh8sj0lg_AAAAAACtdZE"
+  },
+  "get_link": {
+   "status": "ACTIVE",
+   "amount_paid_paise": 0
+  },
+  "get_link_orders": [],
+  "unknown_order": "not_found (expected not_found)",
+  "status": "verified in provider test"
+ },
+ "sarvam": {
+  "chat_tool_call": {
+   "model": "sarvam-105b",
+   "tool": "route_operator_request",
+   "arguments": {
+    "intent": "request_payment_link",
+    "account_ref": "L-1001",
+    "amount_inr": "5000",
+    "language": "hi-IN",
+    "clarification_question": ""
+   }
+  },
+  "tts": {
+   "model": "bulbul:v3",
+   "bytes": 161862
+  },
+  "stt_roundtrip": {
+   "transcript": "L1001 पर ₹4200 बकाया है।",
+   "language_code": "hi-IN",
+   "note": "ASR on our own TTS proves the API path only, not recognition quality"
+  },
+  "status": "verified in provider test"
+ },
+ "relay": {
+  "status": "blocked",
+  "reason": "RELAY_WEBHOOK_URL not set; Relay documents no public run API. Manual Test-flow step required.",
+  "packet": {
+   "case_id": "smoke",
+   "allowed_action": "operator_alert_test",
+   "test_mode": true,
+   "message": "Smoke test from receivables queue (synthetic)"
+  }
+ }
+}

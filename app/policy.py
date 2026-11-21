@@ -261,6 +261,12 @@ def decide(f: AccountFacts, at: datetime, mode: str, *, stale_minutes: int = 30,
         window_note = f" Outside the permitted calling window ({call_window[0]}:00-{call_window[1]}:00); queue for the next window."
     if active:
         l = active[0]
+        link_left = l["amount_paise"] - l["amount_paid_paise"]
+        if link_left != outstanding:
+            # The ledger moved after the link was issued (new batch, credit note, other receipt).
+            return mk(REVIEW, "LINK_AMOUNT_MISMATCH", f"The open payment link can collect {format_inr(link_left)}, but "
+                      f"{format_inr(outstanding)} is now due on the ledger. No reminder until a person decides whether "
+                      "to keep, cancel or replace the link.", next_actions=["refresh_evidence", "route_to_owner"])
         if l["status"] == "PARTIALLY_PAID":
             return mk(CONTACT, "PARTIAL_PAID", f"Paid {format_inr(l['amount_paid_paise'])} of a "
                       f"{format_inr(l['amount_paise'])} link; {format_inr(outstanding)} still due. Remind about the "

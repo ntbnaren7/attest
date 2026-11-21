@@ -325,3 +325,25 @@ def test_spoken_explanation_matches_screen_figures(arun):
     for text, must in (("B-501 ka status batao", ["₹5,000", "₹20,000"]), ("B-501 நிலுவை என்ன?", ["₹5,000", "₹20,000"])):
         reply = _ok(arun.post("/api/coordinator/text", json={"text": text}))["reply"]
         assert all(m in reply for m in must) and "₹25,000" not in reply, reply
+
+
+def test_ledger_change_after_link_goes_to_review(meena):
+    upload(meena, "borrower_batch_A.csv")
+    res = _ok(approve_and_execute(meena, _request_link(meena, "L-1001")))
+    _ok(meena.post("/api/sim/pay", json={"link_id": res["link"]["link_id"], "amount_inr": "2000"}))
+    assert row(meena, "L-1001")["code"] == "PARTIAL_PAID"
+    upload(meena, "borrower_batch_B_fresh.csv")            # ledger now ₹4,350; link can only collect ₹2,200
+    r = row(meena, "L-1001")
+    assert r["decision"] == "REVIEW" and r["code"] == "LINK_AMOUNT_MISMATCH" and "₹2,200" in r["reason"]
+
+
+def test_model_language_label_cannot_override_hinglish(monkeypatch, arun, ctx):
+    from app import coordinator
+    upload(arun, "supplier_batch.csv")
+
+    def fake_model(ctx_, text, lang, history):   # model mislabels romanized Hindi as English
+        return coordinator.Extraction(intent="status_query", language="en-IN", account_ref="B-501",
+                                      source="sarvam_tool_call", model_call={"tool": "route_operator_request"})
+    monkeypatch.setattr(coordinator, "model_extract", fake_model)
+    turn = _ok(arun.post("/api/coordinator/text", json={"text": "B-501 ka status batao"}))
+    assert turn["reply_language"] == "hi-IN" and "कटौती" in turn["reply"]

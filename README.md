@@ -26,7 +26,7 @@ Python 3.12, FastAPI, SQLite (single file at `data/receivables.db`), no other se
 ## Checks
 
 ```bash
-.venv/bin/pytest -q                                  # 42 tests: units + full workflow through the HTTP API
+.venv/bin/pytest -q                                  # 44 tests: units + full workflow through the HTTP API
 .venv/bin/python scripts/demo_e2e.py                 # end-to-end run against the running server, writes evidence/e2e_*.json
 .venv/bin/python scripts/smoke_live.py               # live Cashfree / Sarvam / Relay smoke, writes evidence/smoke_*.json
 .venv/bin/python scripts/evaluate_ranking.py FILE.csv --outcome-col paid_within_7d --k 60   # ours vs file order
