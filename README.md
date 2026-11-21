@@ -50,6 +50,23 @@ Panels, tabs, scenario, language and theme changes use short View Transitions (c
 It is honoured only for requests made on this machine (`localhost`, no proxy headers); through a tunnel or any
 other host the normal sign-in is required. It has light and dark modes.
 
+## Reconciliation (teammate's engine)
+
+The **Reconciliation** view (top bar: Collections | Reconciliation) runs the reconciliation and leakage engine from
+[MSR-3117/SarvamxCashfree](https://github.com/MSR-3117/SarvamxCashfree), vendored unchanged in `recon/`. It compares
+the merchant's books, Cashfree and the bank statement, and shows:
+- money at stake and the findings (unpaid shipped orders, unsettled captures, short or missing bank credits, duplicate refunds);
+- a tie-out proving every rupee is accounted for;
+- an approval batch.
+
+- **Data:** that engine's seeded orders live in the teammate's Cashfree test account. By default it runs on Cashfree
+  responses recorded from that account (`recon/data/`), labelled *Recorded sandbox data*. Set
+  `RECON_CF_PG_CLIENT_ID` and `RECON_CF_PG_CLIENT_SECRET` (that account's PG test keys) to run it live.
+- **Safety:** approvals are a dry run. They show the exact API call that would be made, and nothing moves. The routes
+  (`/api/recon/*`) use the same sign-in, tenant scoping and rate limits as the rest of the API.
+- **Not wired yet:** the payouts agent (Problem 3 data; needs payout keys plus the 2FA public key) and the engine's
+  keyword router (ours routes through Sarvam).
+
 ## Security and abuse protection
 
 All of this lives in `app/security.py` and `app/approvals.py`, with tests in `tests/test_security.py`.
@@ -72,7 +89,7 @@ Limits are adjustable with `RL_*_PER_MIN` environment variables. A limited reque
 ## Checks
 
 ```bash
-.venv/bin/pytest -q                                  # 59 tests: units, workflow, dashboard endpoints and security
+.venv/bin/pytest -q                                  # 66 tests: units, workflow, dashboard, security and reconciliation
 .venv/bin/python scripts/demo_e2e.py                 # end-to-end run against the running server, writes evidence/e2e_*.json
 .venv/bin/python scripts/smoke_live.py               # live Cashfree / Sarvam / Relay smoke, writes evidence/smoke_*.json
 .venv/bin/python scripts/evaluate_ranking.py FILE.csv --outcome-col paid_within_7d --k 60   # ours vs file order
