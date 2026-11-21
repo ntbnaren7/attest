@@ -39,6 +39,13 @@ The dashboard groups people into **Call now · Wait · Check first · Done**. Ea
 and the whole interface switches between English, हिंदी, தமிழ் and ಕನ್ನಡ. A **Hear why** button reads a case's reason aloud
 through Sarvam TTS. Each claim shows its original words and the file or person it came from.
 
+**Live test** (top bar) runs the whole live demo without the terminal:
+- **Live scenario:** load a sample list, prepare and approve a link for the top person, open the Cashfree test page (UPI `testsuccess@gocash`), and watch it land. Each step ticks itself off.
+- **Payment watcher:** open links, signed or rejected Cashfree webhooks, the last provider poll, and which path caught each payment. A **Check now** button forces a poll.
+- **Connections:** **Run live check** makes real test calls: a ₹1 Cashfree sandbox link, one Sarvam tool call plus voice round trip, and optionally one Relay email.
+
+Panels, tabs, scenario, language and theme changes use short View Transitions (crossfades, a sliding tab underline, exit animations). They are off when the device asks for reduced motion.
+
 **Demo mode** (`DEMO_MODE=1`) skips the sign-in screen and adds a **Loan book / Customer invoices** switch to the top bar.
 It is honoured only for requests made on this machine (`localhost`, no proxy headers); through a tunnel or any
 other host the normal sign-in is required. It has light and dark modes.
