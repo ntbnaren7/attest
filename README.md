@@ -18,7 +18,8 @@ results ledger (what is **verified in provider test**, **simulated**, or **block
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 cp .env.example .env          # add sandbox keys if you have them; everything runs without them on fixtures
 .venv/bin/uvicorn app.main:app --port 8000
-# open http://localhost:8000   operators: meena / arun / caller1, password: demo-pass-123 (synthetic tenants only)
+# open http://localhost:8000   with DEMO_MODE=1 it opens signed in as meena; switch scenarios in the top bar
+# (from another machine the sign-in screen appears: meena / arun / caller1, password demo-pass-123, synthetic tenants only)
 ```
 
 Python 3.12, FastAPI, SQLite (single file at `data/receivables.db`), no other services. Delete `data/` for a clean start.
@@ -35,8 +36,12 @@ Without a build, `/` falls back to the original console, which stays available a
 `npm run dev` in `web/` (it proxies `/api` to the backend on port 8000).
 
 The dashboard groups people into **Call now · Wait · Check first · Done**. Each row has one plain-language reason,
-and the whole interface switches between English, हिंदी and தமிழ். A **Hear why** button reads a case's reason aloud
-through Sarvam TTS. It has light and dark modes.
+and the whole interface switches between English, हिंदी, தமிழ் and ಕನ್ನಡ. A **Hear why** button reads a case's reason aloud
+through Sarvam TTS. Each claim shows its original words and the file or person it came from.
+
+**Demo mode** (`DEMO_MODE=1`) skips the sign-in screen and adds a **Loan book / Customer invoices** switch to the top bar.
+It is honoured only for requests made on this machine (`localhost`, no proxy headers); through a tunnel or any
+other host the normal sign-in is required. It has light and dark modes.
 
 ## Security and abuse protection
 
