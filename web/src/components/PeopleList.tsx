@@ -1,61 +1,75 @@
-import { ChevronRight } from 'lucide-react'
-import type { Decision, QueueRow } from '../api'
+import type { Decision, Queue } from '../api'
 import { ago, inr } from '../format'
-import { groupLabel } from '../i18n'
+import { groupLabel, type Key } from '../i18n'
 import { usePrefs } from '../prefs'
-import { StatusIcon } from './Status'
+import { HelpButton } from './HelpButton'
+import { Dot, GROUPS } from './Status'
 
-export function PeopleList({ rows, filter, flash, onOpen, onClear }: {
-  rows: QueueRow[]
+export function PeopleList({ q, filter, setFilter, flash, onOpen }: {
+  q: Queue | null
   filter: Decision | null
+  setFilter: (d: Decision | null) => void
   flash: Set<string>
   onOpen: (id: string) => void
-  onClear: () => void
 }) {
   const { t } = usePrefs()
+  const rows = q?.rows ?? []
   const shown = filter ? rows.filter((r) => r.decision === filter) : rows
+  const sum = shown.reduce((s, r) => s + (r.decision === 'CLOSED' ? 0 : r.outstanding_paise), 0)
+  const tabs: (Decision | null)[] = [null, ...GROUPS]
+
   return (
-    <section className="card" aria-label="People">
-      <div className="list-head">
-        <h2>
-          {filter ? groupLabel(t, filter) : t.all}{' '}
-          <span className="muted num" style={{ fontWeight: 400 }}>
-            · {shown.length} {shown.length === 1 ? t.person : t.people}
-          </span>
-        </h2>
-        {filter && (
-          <button className="btn quiet" onClick={onClear}>
-            {t.all}
+    <section aria-label={t.all}>
+      <div className="tabs" role="tablist">
+        {tabs.map((g) => (
+          <button key={g ?? 'all'} role="tab" className="tab" aria-selected={filter === g} onClick={() => setFilter(g)}>
+            {g && <Dot d={g} />}
+            {g ? groupLabel(t, g) : t.all}
+            <span className="count">{g ? q?.counts[g] ?? 0 : rows.length}</span>
           </button>
-        )}
+        ))}
       </div>
+
+      <div className="tab-note">
+        <span>
+          {filter && <>{t[`groupHint_${filter}` as Key]} · </>}
+          {shown.length > 0 && (
+            <>
+              <span className="sum">{inr(sum)}</span> {t.across} {shown.length} {shown.length === 1 ? t.person : t.people}
+            </>
+          )}
+        </span>
+        {filter && <HelpButton topic={`group_${filter}`} label={groupLabel(t, filter)} />}
+      </div>
+
       {shown.length === 0 && <div className="empty">{rows.length ? t.empty : t.emptyStart}</div>}
-      {shown.map((r) => (
-        <button key={r.account_id} className={`row s-${r.decision} ${flash.has(r.account_id) ? 'flash' : ''}`} onClick={() => onOpen(r.account_id)}>
-          <span className="rank num">{r.rank}</span>
-          <span className="dot-icon" title={groupLabel(t, r.decision)}>
-            <StatusIcon d={r.decision} />
-          </span>
-          <span style={{ minWidth: 0 }}>
-            <span className="who">
-              {r.display_name || r.external_ref}
-              <span className="ref">{r.external_ref}</span>
-            </span>
-            <span className="reason" style={{ display: '-webkit-box' }}>
-              {r.reason_local}
-            </span>
-          </span>
-          <span className="right">
-            <span className="amount num" style={{ display: 'block' }}>
-              {inr(r.decision === 'CLOSED' ? 0 : r.outstanding_paise)}
-            </span>
-            <span className="meta" style={{ display: 'block' }}>
-              {r.decision === 'CONTACT' && !r.contact_allowed_now ? t.afterEight : `${t.checked} ${ago(r.last_verified_at, t)}`}
-            </span>
-          </span>
-          <ChevronRight className="sr" />
-        </button>
-      ))}
+      <ul className="rows">
+        {shown.map((r) => {
+          const late = r.decision === 'CONTACT' && !r.contact_allowed_now
+          return (
+            <li key={r.account_id}>
+              <button className={`row ${flash.has(r.account_id) ? 'flash' : ''}`} onClick={() => onOpen(r.account_id)}>
+                <Dot d={r.decision} />
+                <span style={{ minWidth: 0 }}>
+                  <span className="who" style={{ display: 'block' }}>{r.display_name || r.external_ref}</span>
+                  <span className="ref" style={{ display: 'block' }}>
+                    {r.external_ref} · {groupLabel(t, r.decision)}
+                  </span>
+                </span>
+                <span className="reason">{r.reason_local}</span>
+                <span>
+                  <span className={`amount ${r.decision === 'CLOSED' ? 'zero' : ''}`} style={{ display: 'block' }}>
+                    {r.decision === 'CLOSED' ? inr(0) : inr(r.outstanding_paise)}
+                  </span>
+                  <span className={`when ${late ? 'warn' : ''}`} style={{ display: 'block' }}>
+                    {late ? t.afterEight : `${t.checked} ${ago(r.last_verified_at, t)}`}
+                  </span>
+                </span>
+              </button>
+            </li>
+          )
+        })}
+      </ul>
     </section>
   )
 }

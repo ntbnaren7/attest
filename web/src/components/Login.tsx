@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from 'react'
-import { Check } from 'lucide-react'
 import { api } from '../api'
 import { usePrefs } from '../prefs'
-import { LangSwitch } from './TopBar'
+import { Mark } from './Status'
+import { LangSelect } from './TopBar'
 
+/** Fallback only: shown when the dashboard is opened from another machine (demo sign-in is localhost-only). */
 export function Login({ onDone }: { onDone: () => void }) {
   const { t } = usePrefs()
   const [username, setUsername] = useState('meena')
@@ -27,17 +28,11 @@ export function Login({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="login">
-      <form className="card" onSubmit={submit}>
-        <div className="brand" style={{ marginRight: 0 }}>
-          <div className="brand-mark">
-            <Check size={20} strokeWidth={3} />
-          </div>
-          <div>
-            <div className="brand-name">{t.appName}</div>
-            <div className="brand-sub">{t.signInHint}</div>
-          </div>
+      <form onSubmit={submit}>
+        <div className="wordmark" style={{ fontSize: 20 }}>
+          <Mark size={24} /> Invariant
         </div>
-        <LangSwitch />
+        <p className="muted" style={{ margin: 0 }}>{t.signInHint}</p>
         <label>
           {t.username}
           <input className="field" value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" required />
@@ -47,9 +42,10 @@ export function Login({ onDone }: { onDone: () => void }) {
           <input className="field" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
         </label>
         {error && <div className="err">{error}</div>}
-        <button className="btn big" disabled={busy}>
+        <button className="btn lg" disabled={busy}>
           {t.signIn}
         </button>
+        <LangSelect />
       </form>
     </div>
   )

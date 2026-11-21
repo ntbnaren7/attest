@@ -6,12 +6,12 @@ import { ApproveDialog } from './components/ApproveDialog'
 import { Assistant } from './components/Assistant'
 import { CaseDrawer } from './components/CaseDrawer'
 import { ChangeFeed } from './components/ChangeFeed'
+import { HelpButton } from './components/HelpButton'
+import { ImportDialog } from './components/ImportDialog'
 import { Login } from './components/Login'
 import { PeopleList } from './components/PeopleList'
-import { Summary } from './components/Summary'
+import { Ledger } from './components/Summary'
 import { TopBar } from './components/TopBar'
-import { ImportDialog } from './components/ImportDialog'
-import { HelpButton } from './components/HelpButton'
 
 type Pending = { approval: Approval; name: string; reason: string }
 
@@ -26,12 +26,24 @@ export default function App() {
   const [feed, setFeed] = useState<QueueChange[]>([])
   const [flash, setFlash] = useState<Set<string>>(new Set())
 
+  /** Signed-in user, or (on this machine, demo mode) open straight into the loan-book scenario. */
   const loadMe = useCallback(async () => {
     try {
       setMe(await api.me())
+      return
     } catch {
-      setMe('anon')
+      /* not signed in */
     }
+    try {
+      if ((await api.demo()).enabled) {
+        await api.demoSession('meena')
+        setMe(await api.me())
+        return
+      }
+    } catch {
+      /* fall through to sign-in */
+    }
+    setMe('anon')
   }, [])
 
   const refresh = useCallback(async () => {
@@ -44,9 +56,9 @@ export default function App() {
         window.setTimeout(() => setFlash(new Set()), 2600)
       }
     } catch (e) {
-      if (e instanceof ApiError && e.status === 401) setMe('anon')
+      if (e instanceof ApiError && e.status === 401) loadMe()
     }
-  }, [lang])
+  }, [lang, loadMe])
 
   useEffect(() => {
     loadMe()
@@ -57,17 +69,21 @@ export default function App() {
     refresh()
     api
       .changes()
-      .then((rows) =>
-        setFeed(
-          rows
-            .filter((r) => r.kind === 'queue_change' && r.result)
-            .map((r) => r.result as unknown as QueueChange),
-        ),
-      )
+      .then((rows) => setFeed(rows.filter((r) => r.kind === 'queue_change' && r.result).map((r) => r.result as unknown as QueueChange)))
       .catch(() => {})
     const timer = window.setInterval(refresh, 4000)
     return () => window.clearInterval(timer)
   }, [me, refresh])
+
+  async function switchTo(persona: string) {
+    if (me && me !== 'anon' && me.operator.username === persona) return
+    await api.demoSession(persona)
+    setQ(null)
+    setOpen(null)
+    setFilter(null)
+    setFeed([])
+    setMe(await api.me())
+  }
 
   if (me === null) return null
   if (me === 'anon') return <Login onDone={loadMe} />
@@ -79,33 +95,32 @@ export default function App() {
     <>
       <TopBar
         me={me}
+        onSwitch={switchTo}
         onSignOut={async () => {
           await api.logout().catch(() => {})
           setMe('anon')
           setQ(null)
         }}
       />
-      <main className="shell">
+      <main className="page">
         <div className="page-head">
           <div>
-            <h1>{filter ? t[`group_${filter}`] : t.today}</h1>
-            <div className="muted">
-              {filter ? t[`groupHint_${filter}`] : new Date().toLocaleDateString(lang, { weekday: 'long', day: 'numeric', month: 'long' })}
-            </div>
+            <div className="overline">{new Date().toLocaleDateString(lang, { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+            <h1>{t.today}</h1>
           </div>
-          <div className="with-help">
-            <button className="btn ghost" onClick={() => setImporting(true)}>
-              <Upload size={16} /> {t.addList}
+          <div className="head-actions">
+            <button className="btn secondary" onClick={() => setImporting(true)}>
+              <Upload size={15} strokeWidth={1.9} /> {t.addList}
             </button>
             <HelpButton topic="add_list" label={t.addList} />
           </div>
         </div>
 
-        {q && <Summary q={q} filter={filter} setFilter={setFilter} />}
+        {q && <Ledger q={q} />}
 
         <div className="main">
-          <PeopleList rows={q?.rows ?? []} filter={filter} flash={flash} onOpen={setOpen} onClear={() => setFilter(null)} />
-          <div className="side">
+          <PeopleList q={q} filter={filter} setFilter={setFilter} flash={flash} onOpen={setOpen} />
+          <aside className="side">
             <Assistant
               voiceOn={me.integrations.sarvam.mode === 'live'}
               focusId={open}
@@ -114,19 +129,13 @@ export default function App() {
               onChanged={refresh}
             />
             <ChangeFeed items={feed} onOpen={setOpen} />
-          </div>
+          </aside>
         </div>
       </main>
 
       {open && <CaseDrawer id={open} onClose={() => setOpen(null)} onChanged={refresh} onApprove={openApproval} />}
       {approve && (
-        <ApproveDialog
-          approval={approve.approval}
-          name={approve.name}
-          reason={approve.reason}
-          onClose={() => setApprove(null)}
-          onDone={refresh}
-        />
+        <ApproveDialog approval={approve.approval} name={approve.name} reason={approve.reason} onClose={() => setApprove(null)} onDone={refresh} />
       )}
       {importing && <ImportDialog onClose={() => setImporting(false)} onDone={refresh} />}
     </>

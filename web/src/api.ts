@@ -1,7 +1,7 @@
 // Thin client for the receivables backend. All money is integer paise.
 
 export type Decision = 'CONTACT' | 'HOLD' | 'REVIEW' | 'CLOSED'
-export type Lang = 'en-IN' | 'hi-IN' | 'ta-IN'
+export type Lang = 'en-IN' | 'hi-IN' | 'ta-IN' | 'kn-IN'
 
 export interface LinkInfo {
   link_id: string
@@ -60,6 +60,8 @@ export interface Integration { mode: string; label: string }
 export interface Me {
   operator: { id: string; username: string; display_name: string; can_approve: boolean; mode: 'borrower' | 'merchant'; merchant_name: string }
   integrations: { cashfree: Integration; sarvam: Integration; relay: Integration }
+  demo?: boolean
+  personas?: Record<string, { label: string; detail: string }>
 }
 
 export interface Approval {
@@ -90,7 +92,8 @@ export interface CaseDetail {
   decision: QueueRow
   dues: { id: string; external_ref: string; amount_paise: number; due_date: string | null }[]
   credits: { amount_paise: number; reference: string }[]
-  claims: { id: string; kind: string; amount_paise: number | null; reference: string | null; promised_date: string | null; status: string; status_reason: string | null; source: string; created_at: string }[]
+  claims: { id: string; kind: string; amount_paise: number | null; reference: string | null; promised_date: string | null; status: string; status_reason: string | null; source: string; text: string | null; created_at: string }[]
+  batch_files: Record<string, string>
   receipts: { provider_payment_id: string; amount_paise: number; payment_status: string; provenance: string; verified_at: string }[]
   allocations: { due_id: string; amount_paise: number; basis: string }[]
   links: LinkInfo[]
@@ -159,6 +162,8 @@ const SCREEN = { 'x-approval-screen': '1' }
 export const api = {
   login: (username: string, password: string) => call('/api/login', { method: 'POST', body: JSON.stringify({ username, password }) }),
   logout: () => call('/api/logout', { method: 'POST' }),
+  demo: () => call<{ enabled: boolean }>('/api/demo'),
+  demoSession: (persona: string) => call('/api/demo/session', { method: 'POST', body: JSON.stringify({ persona }) }),
   me: () => call<Me>('/api/me'),
   queue: (lang: Lang) => call<Queue>(`/api/queue?lang=${lang}`),
   caseDetail: (id: string) => call<CaseDetail>(`/api/cases/${encodeURIComponent(id)}`),

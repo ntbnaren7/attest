@@ -1,64 +1,72 @@
-import { Check, LogOut, Moon, Sun } from 'lucide-react'
+import { LogOut, Moon, Sun } from 'lucide-react'
 import type { Lang, Me } from '../api'
 import { LANG_LABEL } from '../i18n'
 import { usePrefs } from '../prefs'
+import { Mark } from './Status'
 
-export function LangSwitch() {
+export function LangSelect() {
   const { lang, setLang, t } = usePrefs()
   return (
-    <div className="seg" role="group" aria-label={t.language}>
+    <select className="select" value={lang} onChange={(e) => setLang(e.target.value as Lang)} aria-label={t.language}>
       {(Object.keys(LANG_LABEL) as Lang[]).map((l) => (
-        <button key={l} type="button" aria-pressed={lang === l} onClick={() => setLang(l)}>
+        <option key={l} value={l}>
           {LANG_LABEL[l]}
-        </button>
+        </option>
       ))}
-    </div>
+    </select>
   )
 }
 
-function Conn({ label, status, state }: { label: string; status: string; state: 'on' | 'practice' | 'off' }) {
-  return (
-    <span title={`${label}: ${status}`}>
-      <i className={state === 'on' ? 'on' : state === 'practice' ? 'practice' : ''} />
-      {label}
-      <span className="sr">: {status}</span>
-    </span>
-  )
-}
-
-export function TopBar({ me, onSignOut }: { me: Me; onSignOut: () => void }) {
+export function TopBar({ me, onSwitch, onSignOut }: { me: Me; onSwitch: (persona: string) => void; onSignOut: () => void }) {
   const { t, theme, toggleTheme } = usePrefs()
   const ig = me.integrations
-  const pay = ig.cashfree.mode === 'cashfree_sandbox' ? 'on' : 'practice'
-  const voice = ig.sarvam.mode === 'live' ? 'on' : 'off'
-  const msgs = ig.relay.mode === 'inbound_webhook' ? 'on' : 'practice'
+  const states = [
+    { name: t.payments, s: ig.cashfree.mode === 'cashfree_sandbox' ? 'on' : 'practice' },
+    { name: t.voice, s: ig.sarvam.mode === 'live' ? 'on' : 'off' },
+    { name: t.messages, s: ig.relay.mode === 'inbound_webhook' ? 'on' : 'practice' },
+  ]
   const word = (s: string) => (s === 'on' ? t.live : s === 'practice' ? t.fixture : t.off)
+  const allOn = states.every((x) => x.s === 'on')
+  const personas = Object.entries(me.personas ?? {})
   return (
     <header className="topbar">
       <div className="topbar-inner">
-        <div className="brand">
-          <div className="brand-mark">
-            <Check size={20} strokeWidth={3} />
-          </div>
-          <div style={{ minWidth: 0 }}>
-            <div className="brand-name">{t.appName}</div>
-            <div className="brand-sub">
-              {me.operator.merchant_name} · {me.operator.mode === 'borrower' ? t.loanBook : t.invoices}
-            </div>
-          </div>
+        <div className="wordmark">
+          <Mark />
+          <span className="name">Invariant</span>
         </div>
-        <div className="conn" aria-label="Connections">
-          <Conn label={t.payments} status={word(pay)} state={pay} />
-          <Conn label={t.voice} status={word(voice)} state={voice} />
-          <Conn label={t.messages} status={word(msgs)} state={msgs} />
-        </div>
-        <LangSwitch />
+
+        {me.demo && personas.length > 1 ? (
+          <div className="segmented" role="group" aria-label={t.scenario}>
+            {personas.map(([id, p]) => (
+              <button key={id} type="button" aria-pressed={me.operator.username === id} onClick={() => onSwitch(id)} title={p.detail}>
+                {id === 'meena' ? t.loanBook : id === 'arun' ? t.invoices : p.label}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <span className="muted small">{me.operator.merchant_name}</span>
+        )}
+
+        <span className="spacer" />
+
+        <span className="systems" title={states.map((x) => `${x.name}: ${word(x.s)}`).join(' · ')}>
+          <span className="dots">
+            {states.map((x) => (
+              <i key={x.name} className={x.s === 'on' ? '' : x.s} />
+            ))}
+          </span>
+          <span className="label">{allOn ? t.systemsOk : t.systemsPractice}</span>
+        </span>
+        <LangSelect />
         <button className="icon-btn" onClick={toggleTheme} aria-label={t.theme} title={t.theme}>
-          {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+          {theme === 'light' ? <Moon size={17} strokeWidth={1.8} /> : <Sun size={17} strokeWidth={1.8} />}
         </button>
-        <button className="btn quiet" onClick={onSignOut}>
-          <LogOut size={16} /> <span className="small">{me.operator.display_name.split(' (')[0]}</span>
-        </button>
+        {!me.demo && (
+          <button className="icon-btn" onClick={onSignOut} aria-label={t.signOut} title={t.signOut}>
+            <LogOut size={17} strokeWidth={1.8} />
+          </button>
+        )}
       </div>
     </header>
   )
