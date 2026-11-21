@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from fastapi.concurrency import run_in_threadpool
 from fastapi.staticfiles import StaticFiles
 
-from . import approvals, auth, coordinator, importer, webhooks
+from . import approvals, auth, coordinator, importer, live, webhooks
 from .config import ROOT, settings as default_settings
 from .context import Ctx
 from .db import now as dbnow
@@ -74,6 +74,8 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
     def screen_channel(request: Request) -> str:
         # The approval screen sends this header; cross-site forms cannot set it, and the voice path never does.
         return approvals.APPROVAL_CHANNEL if request.headers.get("x-approval-screen") == "1" else "unknown"
+
+    live.register(app, ctx, sec, operator)
 
     @app.exception_handler(approvals.ApprovalError)
     def _appr_err(_, e: approvals.ApprovalError):

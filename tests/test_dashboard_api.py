@@ -51,3 +51,18 @@ def test_claim_source_file_is_exposed(meena):
     batch = promise["source"].split(":")[2]
     assert c["batch_files"][batch] == "borrower_batch_A.csv"
     assert promise["text"] == "salary 5th ko aayega tab de dunga"   # original words kept
+
+
+def test_live_panel_status_samples_and_poll(meena, arun):
+    s = meena.get("/api/live/status").json()
+    assert s["cashfree"]["mode"] == "fixture" and set(s["samples"]) == {"loan_book", "fresh_batch", "supplier"}
+    rep = meena.post("/api/live/sample/loan_book").json()
+    assert rep["valid_rows"] == 12 and rep["invalid_rows"] == 6
+    assert meena.post("/api/live/sample/../../etc/passwd").status_code == 404
+    assert meena.post("/api/live/sample/nope").status_code == 404
+    assert "checked" in meena.post("/api/live/poll").json()
+    # Practice-data tenant: the live check reports, without failing or calling anything.
+    chk = meena.post("/api/live/check", json={}).json()
+    assert chk["cashfree"]["ok"] is None and chk["sarvam"]["ok"] is None and chk["relay"]["ok"] is None
+    # Status is tenant-scoped: the supplier operator sees none of the loan book's links or receipts.
+    assert all(r["external_ref"].startswith("B-") for r in arun.get("/api/live/status").json()["receipts"])

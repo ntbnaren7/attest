@@ -10,6 +10,7 @@ from .money import format_inr
 from .specialists import allocate_receipts, evaluate, handoff
 
 log = logging.getLogger("receivables")
+LAST_RECONCILE: dict = {}   # when the provider poll last ran and how many records it checked (for the live panel)
 ORDER = {"CONTACT": 0, "HOLD": 1, "REVIEW": 2, "CLOSED": 3}
 
 
@@ -83,6 +84,7 @@ def reconcile_once(ctx: Ctx) -> int:
             n += 1
         except Exception:
             log.exception("refresh_account failed")
+    LAST_RECONCILE.update(at=iso(), checked=n)
     if n:
         for m in db.all("SELECT DISTINCT merchant_id FROM payment_links"):
             build_queue(ctx, m["merchant_id"])
