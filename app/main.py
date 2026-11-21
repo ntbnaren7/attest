@@ -173,7 +173,7 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
         return q
 
     def _reason_local(r: dict, lang: str | None) -> str:
-        if lang not in ("hi-IN", "ta-IN"):
+        if lang not in ("hi-IN", "ta-IN", "kn-IN"):
             return r["reason"]
         from .policy import Decision
         d = Decision(**{k: r[k] for k in Decision.__dataclass_fields__})
@@ -185,7 +185,7 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
         acct = ctx.db.one("SELECT external_ref FROM accounts WHERE id=? AND merchant_id=?", (case_id, op.merchant_id))
         if not acct:
             raise HTTPException(404, "not found")
-        lang = lang if lang in ("hi-IN", "ta-IN", "en-IN") else "en-IN"
+        lang = lang if lang in coordinator.LANGS else "en-IN"
         d = evaluate(ctx, op.merchant_id, case_id)
         return _spoken(op, coordinator.explain(lang, acct["external_ref"], d), lang)
 
@@ -322,7 +322,7 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
             try:
                 stt = await run_in_threadpool(ctx.sarvam.stt, data, audio.filename or "speech.webm",
                                               audio.content_type or "audio/webm",
-                                              language if language in ("hi-IN", "ta-IN", "en-IN") else "unknown")
+                                              language if language in coordinator.LANGS else "unknown")
             except SarvamError as e:
                 raise HTTPException(502, f"speech-to-text failed: {e}")
             stt["latency_ms"] = int((time.time() - t0) * 1000)

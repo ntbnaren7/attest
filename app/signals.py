@@ -14,27 +14,27 @@ from .indic_numbers import corrected_amount
 PAID = [
     r"\balready paid\b", r"\bpaid\b", r"\bde diya\b", r"\bde di\b", r"\bdiya hai\b", r"\bbhar diya\b", r"\bjama\b",
     r"\bpayment (?:ho gaya|done|kar diya|kiya)\b", r"दे दिया", r"दे दिए", r"चुका दिया", r"भर दिया", r"जमा कर",
-    r"payment हो चुका", r"हो चुका है", r"भुगतान हो गया", r"भुगतान कर दिया", r"पेमेंट हो गया", r"கட்டிட்டேன்", r"கட்டினேன்", r"அனுப்பினேன்", r"பணம் கட்டி", r"payment பண்ணேன்",
+    r"payment हो चुका", r"हो चुका है", r"भुगतान हो गया", r"भुगतान कर दिया", r"पेमेंट हो गया", r"கட்டிட்டேன்", r"கட்டினேன்", r"ಕಟ್ಟಿದ್ದೇನೆ", r"ಕಟ್ಟಿದ್ದಾರೆ", r"ಪಾವತಿಸಿದ್ದೇನೆ", r"ಪಾವತಿ ಆಗಿದೆ", r"ಕೊಟ್ಟಿದ್ದೇನೆ", r"அனுப்பினேன்", r"பணம் கட்டி", r"payment பண்ணேன்",
 ]
-NOT_PAID = [r"नहीं दि", r"नहीं दे", r"nahi diya", r"not paid", r"haven'?t paid", r"கட்டலை", r"கட்ட முடியாது", r"नहीं दूँगा", r"नहीं दूंगा"]
+NOT_PAID = [r"नहीं दि", r"नहीं दे", r"nahi diya", r"not paid", r"haven'?t paid", r"கட்டலை", r"கட்ட முடியாது", r"नहीं दूँगा", r"नहीं दूंगा", r"ಕಟ್ಟಿಲ್ಲ", r"ಕೊಟ್ಟಿಲ್ಲ"]
 PROMISE = [
     r"\bwill pay\b", r"\bpay (?:by|on|tomorrow|next)\b", r"\bde dunga\b", r"\bde denge\b", r"\bkal\b", r"\btomorrow\b",
-    r"दे दूँगा", r"दे दूंगा", r"दे देंगे", r"कल\b", r"நாளைக்கு", r"கட்டுறேன்", r"கட்டுவேன்", r"\bpromise",
+    r"दे दूँगा", r"दे दूंगा", r"दे देंगे", r"कल\b", r"நாளைக்கு", r"கட்டுறேன்", r"கட்டுவேன்", r"ನಾಳೆ", r"ಕಟ್ಟುತ್ತೇನೆ", r"ಕೊಡುತ್ತೇನೆ", r"\bpromise",
 ]
 SALARY = [r"salary", r"सैलरी", r"तनख्वाह", r"vetan", r"சம்பளம்"]
 DEDUCTION = [
     r"deduct", r"\breturn(?:ed)?\b", r"credit note", r"\bshort(?:age)?\b", r"damaged", r"wrong bill", r"galat",
-    r"गलत", r"क्रेडिट नोट", r"काट", r"वापस", r"திருப்பி", r"கழி", r"tds", r"rate difference", r"dispute",
+    r"गलत", r"क्रेडिट नोट", r"काट", r"वापस", r"திருப்பி", r"கழி", r"ಕಡಿತ", r"ಹಿಂದಿರುಗಿಸಿ", r"tds", r"rate difference", r"dispute",
 ]
 HARDSHIP = [
     r"lost (?:my |his |her )?job", r"job (?:chali|gayi|lost)", r"naukri (?:chali|gayi)", r"नौकरी (?:चली|गई)",
     r"hospital", r"अस्पताल", r"medical", r"illness", r"बीमार", r"death", r"passed away", r"गुज़र", r"cannot pay",
     r"can'?t pay", r"nahi de sakta", r"नहीं दे सकता", r"नहीं दे सकती", r"unemploy", r"வேலை போச்சு", r"மருத்துவமனை",
-    r"flood", r"crop fail", r"फसल",
+    r"flood", r"crop fail", r"फसल", r"ಆಸ್ಪತ್ರೆ", r"ಕೆಲಸ ಹೋಯಿತು", r"ಕಟ್ಟಲು ಆಗುವುದಿಲ್ಲ",
 ]
 OPT_OUT = [
     r"don'?t call", r"do not call", r"stop calling", r"call (?:mat|na) kar", r"कॉल मत", r"फ़ोन मत", r"फोन मत",
-    r"பண்ணாதீங்க", r"call பண்ணாதே",
+    r"பண்ணாதீங்க", r"call பண்ணாதே", r"ಕರೆ ಮಾಡಬೇಡಿ", r"ಫೋನ್ ಮಾಡಬೇಡಿ",
 ]
 REF = re.compile(
     r"\b(?:utr|ref(?:erence)?|order(?:_id| id)?|txn|cf)[\s:#\-]*(?:no\.?|number|id)?[\s:#\-]*([A-Za-z0-9_\-]{4,})",
@@ -98,7 +98,7 @@ def extract(text: str, today: date) -> Signals:
         s.salary_day = int(m.group(1))
     s.promise = _any(PROMISE, t) and not s.paid_claim
     if s.promise:
-        if re.search(r"\b(kal|tomorrow)\b|कल|நாளைக்கு", t, re.IGNORECASE):
+        if re.search(r"\b(kal|tomorrow)\b|कल|நாளைக்கு|ನಾಳೆ", t, re.IGNORECASE):
             s.promised_date = (today + timedelta(days=1)).isoformat()
         elif m:
             d = next_day_of_month(int(m.group(1)), today)

@@ -29,3 +29,25 @@ def test_signature_dot_form_is_accepted_and_reported():
     dot = base64.b64encode(hmac.new(key.encode(), ts.encode() + b"." + raw, hashlib.sha256).digest()).decode()
     ok, why = verify_webhook_signature(raw, ts, dot, key, 300)
     assert ok and "dot" in why
+
+
+def test_kannada_reasons_help_and_assistant(meena):
+    upload(meena, "borrower_batch_A.csv")
+    q = meena.get("/api/queue", params={"lang": "kn-IN"}).json()
+    r = next(x for x in q["rows"] if x["external_ref"] == "L-1006")
+    assert "ಕರೆ ಮಾಡಬೇಡಿ" in r["reason_local"]                     # opt-out, in Kannada
+    h = meena.get("/api/help/send_link", params={"lang": "kn-IN"}).json()
+    assert "ಪಾವತಿ ಲಿಂಕ್" in h["text"]
+    turn = meena.post("/api/coordinator/text", json={"text": "L-1012 ಖಾತೆಯ ಬಾಕಿ ಎಷ್ಟು?"}).json()
+    assert turn["reply_language"] == "kn-IN" and "ಬಾಕಿ" in turn["reply"]
+    assert turn["account"]["external_ref"] == "L-1012"
+
+
+def test_claim_source_file_is_exposed(meena):
+    upload(meena, "borrower_batch_A.csv")
+    acct = row(meena, "L-1004")["account_id"]
+    c = meena.get(f"/api/cases/{acct}").json()
+    promise = next(cl for cl in c["claims"] if cl["kind"] == "promise")
+    batch = promise["source"].split(":")[2]
+    assert c["batch_files"][batch] == "borrower_batch_A.csv"
+    assert promise["text"] == "salary 5th ko aayega tab de dunga"   # original words kept
