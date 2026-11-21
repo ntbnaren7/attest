@@ -43,6 +43,8 @@ class Settings:
 
     # Sarvam
     sarvam_api_key: str = field(default_factory=lambda: _env("SARVAM_API_KEY"))
+    # Second key (customer voice layer; also the fallback when the first is rate-limited)
+    sarvam_voice_api_key: str = field(default_factory=lambda: _env("SARVAM_VOICE_API_KEY"))
     sarvam_base_url: str = field(default_factory=lambda: _env("SARVAM_BASE_URL", "https://api.sarvam.ai"))
     sarvam_chat_model: str = field(default_factory=lambda: _env("SARVAM_CHAT_MODEL", "sarvam-105b"))
     sarvam_stt_model: str = field(default_factory=lambda: _env("SARVAM_STT_MODEL", "saaras:v4"))

@@ -11,3 +11,7 @@ langgraph-checkpoint==2.1.2
 pandas==2.3.3
 RapidFuzz==3.13.0
 zen-engine==2.1.7
+# customer voice layer (voice/, vendored from the teammate repo)
+pydantic-settings==2.12.0
+python-dotenv==1.2.4
+requests==2.34.2

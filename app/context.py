@@ -27,7 +27,7 @@ class Ctx:
                                       settings.cashfree_client_secret, settings.cashfree_api_version)
         self.sarvam = SarvamLive(settings.sarvam_api_key, settings.sarvam_base_url, settings.sarvam_chat_model,
                                  settings.sarvam_stt_model, settings.sarvam_tts_model,
-                                 settings.sarvam_tts_speaker) if settings.sarvam_live else None
+                                 settings.sarvam_tts_speaker, fallback_keys=(settings.sarvam_voice_api_key,)) if settings.sarvam_live else None
         self.relay = RelayAdapter(settings.relay_webhook_url, settings.relay_webhook_secret)
 
     def cashfree_for(self, merchant_id: str):
