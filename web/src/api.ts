@@ -162,7 +162,9 @@ const SCREEN = { 'x-approval-screen': '1' }
 export const api = {
   login: (username: string, password: string) => call('/api/login', { method: 'POST', body: JSON.stringify({ username, password }) }),
   logout: () => call('/api/logout', { method: 'POST' }),
-  demo: () => call<{ enabled: boolean }>('/api/demo'),
+  demo: () => call<{ enabled: boolean; dataset: 'sample' | 'live' | null }>('/api/demo'),
+  demoDataset: (name: 'sample' | 'live', reset = false) =>
+    call<{ dataset: string }>('/api/demo/dataset', { method: 'POST', body: JSON.stringify({ name, reset }) }),
   demoSession: (persona: string) => call('/api/demo/session', { method: 'POST', body: JSON.stringify({ persona }) }),
   me: () => call<Me>('/api/me'),
   queue: (lang: Lang) => call<Queue>(`/api/queue?lang=${lang}`),

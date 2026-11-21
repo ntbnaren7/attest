@@ -1927,3 +1927,25 @@ code {
     grid-template-columns: 1fr;
   }
 }
+
+/* top bar: keep one line now that it holds two switches */
+.nav button,
+.segmented button {
+  white-space: nowrap;
+}
+.topbar-inner {
+  max-width: 1440px;
+}
+@media (max-width: 1600px) {
+  .systems .label {
+    display: none;
+  }
+}
+@media (max-width: 1400px) {
+  .systems {
+    display: none;
+  }
+  .topbar-inner {
+    padding: 0 16px;
+  }
+}

@@ -125,3 +125,9 @@ def test_demo_session_only_locally_and_only_when_enabled(app, monkeypatch):
     assert c.post("/api/demo/session", json={"persona": "root"}).status_code == 400
     assert c.post("/api/demo/session", json={"persona": "arun"}).status_code == 200
     assert c.get("/api/me").json()["operator"]["username"] == "arun"
+
+
+def test_dataset_switch_is_demo_and_localhost_only(meena):
+    r = meena.post("/api/demo/dataset", json={"name": "live"}, headers={"x-forwarded-for": "203.0.113.9"})
+    assert r.status_code == 403      # through a proxy / tunnel: refused
+    assert meena.post("/api/demo/dataset", json={"name": "nope"}, headers={"x-forwarded-for": "1.2.3.4"}).status_code == 403

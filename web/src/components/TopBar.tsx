@@ -1,5 +1,6 @@
 import { LogOut, Moon, Sun } from 'lucide-react'
-import type { Lang, Me } from '../api'
+import { useEffect, useState } from 'react'
+import { api, type Lang, type Me } from '../api'
 import { LANG_LABEL } from '../i18n'
 import { usePrefs } from '../prefs'
 import { Mark } from './Status'
@@ -70,6 +71,8 @@ export function TopBar({ me, onSwitch, onSignOut, onLive, view, onView }: {
           <span className="muted small">{me.operator.merchant_name}</span>
         )}
 
+        {me.demo && <DatasetSwitch />}
+
         <span className="spacer" />
 
         <button className="live-btn" onClick={onLive} title="Run the live demo: checks, payment and watcher">
@@ -95,5 +98,35 @@ export function TopBar({ me, onSwitch, onSignOut, onLive, view, onView }: {
         )}
       </div>
     </header>
+  )
+}
+
+/** Sample data (pre-filled history) or a clean live run; switches the server's database, then reloads. */
+function DatasetSwitch() {
+  const { t } = usePrefs()
+  const [ds, setDs] = useState<'sample' | 'live' | null>(null)
+  useEffect(() => {
+    api.demo().then((d) => setDs(d.dataset)).catch(() => {})
+  }, [])
+  async function go(name: 'sample' | 'live', reset = false) {
+    if (reset && !window.confirm(t.resetLiveConfirm)) return
+    await api.demoDataset(name, reset)
+    window.location.reload()
+  }
+  if (!ds) return null
+  return (
+    <div className="segmented" role="group" aria-label={t.dataset}>
+      <button type="button" aria-pressed={ds === 'sample'} onClick={() => ds !== 'sample' && go('sample')}>
+        {t.sampleData}
+      </button>
+      <button type="button" aria-pressed={ds === 'live'} onClick={() => ds !== 'live' && go('live')}>
+        {t.liveRun}
+      </button>
+      {ds === 'live' && (
+        <button type="button" onClick={() => go('live', true)} title={t.resetLive}>
+          ↺
+        </button>
+      )}
+    </div>
   )
 }

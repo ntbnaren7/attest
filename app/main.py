@@ -16,7 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from . import approvals, auth, coordinator, daemon, importer, inbox, ledger, live, ops, recon, webhooks
 from .config import ROOT, settings as default_settings
 from .context import Ctx
-from .db import now as dbnow
+from .db import DB, now as dbnow
 from .money import AmountError, format_inr, parse_rupees_to_paise
 from .policy import load_facts
 from .providers.cashfree import CashfreeFixture, ProviderError, sign_webhook
@@ -270,10 +270,43 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
         forwarded = any(request.headers.get(h) for h in ("x-forwarded-for", "x-forwarded-host", "forwarded", "x-real-ip"))
         return peer in ("127.0.0.1", "::1", "testclient") and host in ("localhost", "127.0.0.1", "testserver") and not forwarded
 
+    # Two local datasets for demos: "sample" (pre-filled history) and "live" (a clean book for the live run).
+    data_dir = os.path.dirname(os.path.abspath(ctx.settings.db_path))
+    datasets = {"sample": os.path.join(data_dir, "demo.db"), "live": os.path.join(data_dir, "pitch.db")}
+
+    def current_dataset() -> str | None:
+        cur = os.path.abspath(ctx.db_path_in_use) if hasattr(ctx, "db_path_in_use") else os.path.abspath(ctx.settings.db_path)
+        return next((k for k, v in datasets.items() if os.path.abspath(v) == cur), None)
+
     @app.get("/api/demo")
     def demo_info(request: Request):
         ok = _demo_allowed(request)
-        return {"enabled": ok, "personas": DEMO_PERSONAS if ok else {}}
+        return {"enabled": ok, "personas": DEMO_PERSONAS if ok else {}, "dataset": current_dataset() if ok else None}
+
+    @app.post("/api/demo/dataset")
+    async def demo_dataset(request: Request):
+        """Switch the running server between the sample and live-run databases (demo mode, this machine only)."""
+        if not _demo_allowed(request):
+            raise HTTPException(403, "Only available on this machine with DEMO_MODE=1.")
+        sec.limit("login", client_ip(request))
+        body = await request.json()
+        name = str(body.get("name", ""))
+        if name not in datasets:
+            raise HTTPException(400, "unknown dataset")
+        path = datasets[name]
+        if name == "live" and body.get("reset"):   # start the live run from an empty book
+            if current_dataset() == "live":
+                ctx.db = DB(datasets["sample"])
+                ctx.db_path_in_use = datasets["sample"]
+            for suffix in ("", "-wal", "-shm"):
+                if os.path.exists(path + suffix):
+                    os.remove(path + suffix)
+        ctx.db = DB(path)
+        ctx.db_path_in_use = path
+        seed(ctx)
+        daemon.LAST.clear()
+        recon.LAST_RUN.clear()
+        return {"dataset": name}
 
     @app.post("/api/demo/session")
     async def demo_session(request: Request):
