@@ -24,3 +24,9 @@ def test_recon_approval_is_dry_run_once_and_scoped(meena, arun):
 
 def test_recon_needs_sign_in(app):
     assert TestClient(app).post("/api/recon/run").status_code == 401
+
+
+def test_assistant_routes_books_questions_to_the_engine(meena):
+    out = meena.post("/api/coordinator/text", json={"text": "Any settlement discrepancies or fee leakage this week?"}).json()
+    assert out["extraction"]["intent"] == "books_query"
+    assert "12 issues" in out["reply"] and "₹82,513.18" in out["reply"]
