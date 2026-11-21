@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { ArrowUp, Loader2, Mic } from 'lucide-react'
+import { ArrowUp, Loader2, Mic, Paperclip } from 'lucide-react'
 import { api, type ChatMessage, type ChatThread, type Queue } from '../api'
 import { errText } from '../errors'
 import { inr, time } from '../format'
@@ -29,7 +29,19 @@ function Linked({ text }: { text: string }) {
   )
 }
 
-type Local = ChatMessage & { pending?: boolean; audioUrl?: string; replyAudio?: string | null }
+type Local = ChatMessage & { pending?: boolean; audioUrl?: string; imageUrl?: string; replyAudio?: string | null }
+
+/** Shrink a phone photo to ≤1600px JPEG so it uploads fast and stays under the server cap. */
+async function shrink(file: File): Promise<Blob> {
+  if (file.type === 'application/pdf') return file
+  const bmp = await createImageBitmap(file)
+  const k = Math.min(1, 1600 / Math.max(bmp.width, bmp.height))
+  const c = document.createElement('canvas')
+  c.width = Math.round(bmp.width * k)
+  c.height = Math.round(bmp.height * k)
+  c.getContext('2d')!.drawImage(bmp, 0, 0, c.width, c.height)
+  return new Promise((res) => c.toBlob((b) => res(b ?? file), 'image/jpeg', 0.85))
+}
 
 /** The customer's side of the conversation, simulated in the dashboard (replaces WhatsApp). */
 export function CustomerChat({ q, onChanged }: { q: Queue | null; onChanged: () => void }) {
@@ -44,6 +56,7 @@ export function CustomerChat({ q, onChanged }: { q: Queue | null; onChanged: () 
   const end = useRef<HTMLDivElement>(null)
   const rec = useRef<MediaRecorder | null>(null)
   const chunks = useRef<Blob[]>([])
+  const picker = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!active && people.length) setActive(people[0].account_id)
@@ -59,20 +72,22 @@ export function CustomerChat({ q, onChanged }: { q: Queue | null; onChanged: () 
   }, [active, t])
 
   useEffect(() => {
-    end.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    const box = end.current?.parentElement
+    if (box) box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' })
   }, [msgs])
 
-  async function send(body: { text?: string; audio?: Blob }) {
+  async function send(body: { text?: string; audio?: Blob; image?: Blob }) {
     if (!active || state === 'busy') return
     const audioUrl = body.audio ? URL.createObjectURL(body.audio) : undefined
-    const mine: Local = { ts: new Date().toISOString(), via: body.audio ? 'voice' : 'text', text: body.text ?? null,
-      reply: null, reply_source: null, claims: [], status: null, language: null, pending: true, audioUrl }
+    const imageUrl = body.image ? URL.createObjectURL(body.image) : undefined
+    const mine: Local = { ts: new Date().toISOString(), via: body.image ? 'image' : body.audio ? 'voice' : 'text', text: body.text ?? null,
+      reply: null, reply_source: null, claims: [], status: null, language: null, pending: true, audioUrl, imageUrl }
     setMsgs((m) => [...m, mine])
     setText('')
     setState('busy')
     setErr('')
     try {
-      const r = await api.inboxSend(active, body.text ?? null, body.audio ?? null)
+      const r = await api.inboxSend(active, body.text ?? null, body.audio ?? null, body.image ?? null)
       setMsgs((m) => m.map((x) => (x === mine ? { ...x, pending: false, text: r.transcript || x.text, reply: r.reply ?? r.note ?? '',
         reply_source: r.reply_source, claims: r.claims.map((c) => c.kind), status: r.decision?.code ?? null,
         replyAudio: r.reply_audio_b64 } : x)))
@@ -110,6 +125,16 @@ export function CustomerChat({ q, onChanged }: { q: Queue | null; onChanged: () 
       setState('rec')
     } catch {
       setErr(t.micDenied)
+    }
+  }
+  async function pickPhoto(f: File | undefined) {
+    if (!f) return
+    try {
+      send({ image: await shrink(f), text: text.trim() || undefined })
+    } catch {
+      setErr(t.photoUnreadable)
+    } finally {
+      if (picker.current) picker.current.value = ''
     }
   }
   const stopRec = () => rec.current?.state === 'recording' && rec.current.stop()
@@ -163,7 +188,17 @@ export function CustomerChat({ q, onChanged }: { q: Queue | null; onChanged: () 
                     </div>
                   )}
                   {m.audioUrl && <audio controls src={m.audioUrl} className="bubble-audio" />}
-                  {m.text && <div>{m.text}</div>}
+                  {m.imageUrl && <img src={m.imageUrl} alt={t.photo} className="bubble-img" />}
+                  {m.via === 'image' ? (
+                    !m.pending && m.text && (
+                      <div className="ocr-read">
+                        <div className="voice-tag">{t.readFromPhoto}</div>
+                        {m.text}
+                      </div>
+                    )
+                  ) : (
+                    m.text && <div>{m.text}</div>
+                  )}
                   <span className="stamp">{time(m.ts)}</span>
                 </div>
                 {m.pending ? (
@@ -196,6 +231,11 @@ export function CustomerChat({ q, onChanged }: { q: Queue | null; onChanged: () 
           </div>
           {err && <p className="err" style={{ margin: '0 16px 8px' }}>{err}</p>}
           <form className="chat-input" onSubmit={submit}>
+            <input ref={picker} type="file" accept="image/*,application/pdf" hidden onChange={(e) => pickPhoto(e.target.files?.[0])} />
+            <button type="button" className="btn round ghost" aria-label={t.sendPhoto} title={t.sendPhoto}
+              disabled={!active || state !== 'idle'} onClick={() => picker.current?.click()}>
+              <Paperclip size={18} strokeWidth={2} />
+            </button>
             <input className="field" value={text} onChange={(e) => setText(e.target.value)} placeholder={t.typeMessage} aria-label={t.typeMessage}
               maxLength={500} disabled={!active} />
             {text.trim() ? (

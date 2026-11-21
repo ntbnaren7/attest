@@ -204,11 +204,12 @@ export const api = {
   reconApprove: (thread_id: string, decisions: Record<string, boolean>) =>
     call<ReconView>('/api/recon/approve', { method: 'POST', body: JSON.stringify({ thread_id, decisions }) }),
   inboxThread: (accountId: string) => call<ChatThread>(`/api/inbox/thread/${encodeURIComponent(accountId)}`),
-  inboxSend: (accountId: string, text: string | null, audio: Blob | null) => {
+  inboxSend: (accountId: string, text: string | null, audio: Blob | null, image: Blob | null = null) => {
     const fd = new FormData()
     fd.append('account_id', accountId)
     if (text) fd.append('text', text)
     if (audio) fd.append('audio', audio, audio.type.includes('mp4') ? 'voice_note.m4a' : 'voice_note.webm')
+    if (image) fd.append('image', image, 'photo.jpg')
     return call<ChatResult>('/api/inbox/message', { method: 'POST', body: fd })
   },
   help: (topic: string, lang: Lang) => call<{ text: string; audio_b64: string | null }>(`/api/help/${encodeURIComponent(topic)}?lang=${lang}`),
@@ -276,7 +277,7 @@ export interface ReconView {
 
 export interface ChatMessage {
   ts: string
-  via: 'text' | 'voice' | null
+  via: 'text' | 'voice' | 'image' | null
   text: string | null
   reply: string | null
   reply_source: string | null
@@ -295,6 +296,7 @@ export interface ChatResult {
   reply: string | null
   reply_source: string
   reply_audio_b64?: string | null
+  ocr?: { text: string; languages: string[]; review_required: boolean }
   claims: { kind: string }[]
   decision?: { code: string; reason: string }
   note?: string

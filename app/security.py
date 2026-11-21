@@ -178,7 +178,7 @@ def is_https(request: Request) -> bool:
     return request.url.scheme == "https" or request.headers.get("x-forwarded-proto", "").lower() == "https"
 
 
-CSP = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
+CSP = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; "
        "font-src 'self' data:; media-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; "
        "base-uri 'self'; form-action 'self'")
 

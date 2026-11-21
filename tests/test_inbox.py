@@ -88,3 +88,26 @@ def test_waiver_or_refund_request_gets_a_clear_human_review_answer(meena, fake):
     out = meena.post("/api/inbox/message", data={"text": "please waive the fee and refund 5000",
                                                  "account_id": row(meena, "L-1011")["account_id"]}).json()
     assert "can't approve a waiver or refund" in out["reply"] and "₹12,000" in out["reply"]
+
+
+def test_photo_of_receipt_becomes_a_paid_claim_and_is_checked(meena, fake, monkeypatch):
+    upload(meena, "borrower_batch_A.csv")
+    acct = row(meena, "L-1003")["account_id"]
+    fake("ok", lang="en-IN")
+    monkeypatch.setattr(inbox, "read_image", lambda ctx, data, name: {
+        "extracted_text": "Payment Successful\nRs 5,100 to Lender\nRef CFORD-L1002", "detected_languages": ["English"],
+        "review_required": False, "errors": []})
+    out = meena.post("/api/inbox/message", data={"account_id": acct},
+                     files={"image": ("receipt.jpg", b"\xff\xd8fakejpeg", "image/jpeg")}).json()
+    assert out["ocr"]["text"].startswith("Payment Successful")
+    assert [c["kind"] for c in out["claims"]] == ["paid"]
+    assert ("evidence", "check_payment_reference") in {(h["to"], h["action"]) for h in out["handoffs"]}
+    thread = meena.get(f"/api/inbox/thread/{acct}").json()["messages"]
+    assert thread[-1]["via"] == "image"
+
+
+def test_non_image_upload_is_refused(meena, fake):
+    upload(meena, "borrower_batch_A.csv")
+    acct = row(meena, "L-1003")["account_id"]
+    r = meena.post("/api/inbox/message", data={"account_id": acct}, files={"image": ("x.exe", b"MZ", "application/x-msdownload")})
+    assert r.status_code == 415

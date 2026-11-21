@@ -81,23 +81,30 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
     @app.post("/api/inbox/message")
     async def inbox_message(phone: str = Form(""), text: str = Form(""), language: str = Form(""),
                             account_id: str = Form(""), audio: UploadFile | None = File(None),
-                            op: auth.Operator = Depends(operator)):
+                            image: UploadFile | None = File(None), op: auth.Operator = Depends(operator)):
         """A customer's WhatsApp-style message (simulated inbound until a WhatsApp number is connected)."""
         data = await audio.read() if audio else None
-        if not data and not text.strip():
-            raise HTTPException(400, "Send text or a voice note.")
+        img = await image.read() if image else None
+        if img is not None:
+            if len(img) > 1_500_000:
+                raise HTTPException(413, "Photo too large. Send one under 1.5 MB.")
+            if not (image.content_type or "").startswith(("image/", "application/pdf")):
+                raise HTTPException(415, "Send a photo (JPG or PNG) or a PDF.")
+        if not data and not img and not text.strip():
+            raise HTTPException(400, "Send text, a voice note or a photo.")
         if data and len(data) > 1_500_000:
             raise HTTPException(413, "Voice note too long. Keep it under 30 seconds.")
         if len(text) > MAX_UTTERANCE_CHARS:
             raise HTTPException(413, f"Please keep it under {MAX_UTTERANCE_CHARS} characters.")
         sec.limit("assistant", op.id)
-        sec.budget.charge(op.merchant_id, 3 if data else 1)
+        sec.budget.charge(op.merchant_id, 3 if (data or img) else 1)
         sec.inflight.acquire(op.id)
         try:
             return await run_in_threadpool(
                 inbox.process, ctx, op, phone=phone or None, text=text or None, audio=data,
                 filename=(audio.filename if audio else None) or "voice_note.ogg",
-                language=language if language in coordinator.LANGS else None, account_id=account_id or None)
+                language=language if language in coordinator.LANGS else None, account_id=account_id or None,
+                image=img, image_name=(image.filename if image else None) or "photo.jpg")
         except RuntimeError as e:
             raise HTTPException(503, str(e))
         finally:

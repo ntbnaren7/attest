@@ -209,11 +209,46 @@ def guard_reply(reply: str, allowed_paise: set[int]) -> tuple[bool, str]:
     return True, ""
 
 
+RECEIPT_WORDS = re.compile(r"success|successful|paid|completed|debited|credited|receipt|transaction|transferred|"
+                           r"सफल|भुगतान|வெற்றி|ಯಶಸ್ವಿ", re.IGNORECASE)
+
+
+def read_image(ctx: Ctx, data: bytes, filename: str) -> dict:
+    """Sarvam Document AI OCR (teammate module, ocr/). Tries our key, then the second key."""
+    from ocr.sarvam_ocr import SarvamOCR
+    last = None
+    for key in (ctx.settings.sarvam_api_key, ctx.settings.sarvam_voice_api_key):
+        if not key:
+            continue
+        try:
+            r = SarvamOCR(api_key=key).process_document(data, filename)
+            if r.get("extracted_text", "").strip() or not r.get("errors"):
+                return r
+            last = r
+        except Exception as e:  # quota or network: try the other key
+            last = {"extracted_text": "", "errors": [type(e).__name__]}
+    if last is None:
+        raise RuntimeError("No Sarvam key configured for OCR")
+    return last
+
+
 def process(ctx: Ctx, op, *, phone: str | None, text: str | None = None, audio: bytes | None = None,
-            filename: str = "voice_note.ogg", language: str | None = None, account_id: str | None = None) -> dict:
+            filename: str = "voice_note.ogg", language: str | None = None, account_id: str | None = None,
+            image: bytes | None = None, image_name: str = "photo.jpg") -> dict:
     layer = _layer(ctx)
     if layer is None:
         raise RuntimeError("No Sarvam key configured for the customer voice layer")
+    ocr = None
+    if image:
+        ocr = read_image(ctx, image, image_name)
+        read = re.sub(r"\n\s*\n+", "\n", (ocr.get("extracted_text") or "").strip())
+        ocr["extracted_text"] = read
+        text = "\n".join(x for x in ((text or "").strip(), read) if x)
+        if not text:
+            return {"transcript": "", "language": language or "en-IN", "claims": [], "handoffs": [], "account": None,
+                    "ocr": {"text": "", "languages": [], "review_required": True},
+                    "reply": "I could not read that photo. Please send a clearer picture of the receipt or note.",
+                    "reply_source": "template"}
     res = (layer.process_whatsapp_voice(audio_bytes=audio, filename=filename, sender_phone=phone, language_hint=language)
            if audio else layer.process_whatsapp_text(text=text or "", sender_phone=phone, language_hint=language))
     transcript = (res.get("transcript") or "").strip()
@@ -223,6 +258,11 @@ def process(ctx: Ctx, op, *, phone: str | None, text: str | None = None, audio: 
     out = {"transcript": transcript, "language": lang, "voice_layer": {
         "success": res.get("success"), "target_action": (res.get("cashfree_action") or {}).get("target_action"),
         "entities": entities, "natural_reply": res.get("reply_text")}, "claims": [], "handoffs": []}
+    if ocr is not None:
+        transcript = transcript or (text or "")
+        out["transcript"] = transcript
+        out["ocr"] = {"text": (ocr.get("extracted_text") or "").strip(), "languages": ocr.get("detected_languages", [])[:3],
+                      "review_required": bool(ocr.get("review_required"))}
     if not transcript:
         out.update(reply=REPLIES[lang]["other"].format(due="-"), reply_source="template", account=None)
         return out
@@ -250,13 +290,15 @@ def process(ctx: Ctx, op, *, phone: str | None, text: str | None = None, audio: 
     actor = f"customer:{_digits(phone) or 'unknown'}"
     today = now().astimezone(IST).date()
     sig = extract(transcript, today)
+    if ocr is not None and not sig.paid_claim and sig.reference and RECEIPT_WORDS.search(transcript):
+        sig.paid_claim = True  # a photo of a payment receipt with a reference counts as "I paid" (still only a claim)
     amt, _ = corrected_amount(transcript)
     if amt is None and entities.get("amount"):
         amt = round(float(entities["amount"]) * 100)
     reference = sig.reference or entities.get("transaction_id") or None
     kinds = [k for k, on in (("opt_out", sig.opt_out), ("paid", sig.paid_claim), ("deduction", sig.deduction),
                              ("hardship", sig.hardship), ("promise", sig.promise)) if on]
-    source = f"whatsapp:{_digits(phone) or 'unknown'}"
+    source = f"{'photo' if ocr is not None else 'chat'}:{_digits(phone) or 'unknown'}"
     for kind in kinds:
         promised = None
         if kind == "promise":
@@ -275,7 +317,9 @@ def process(ctx: Ctx, op, *, phone: str | None, text: str | None = None, audio: 
     out["decision"] = {"decision": d.decision, "code": d.code, "reason": d.reason, "outstanding_paise": d.outstanding_paise}
 
     # --- reply: grounded in this account's verified facts; then the voice layer's draft; then a fixed reply
-    grounded, why = write_reply(ctx, op.merchant_id, acct["id"], transcript, lang)
+    message = (f"[The customer sent a photo; do not ask them to send it again. Text read from it:]\n{transcript}"
+               if ocr is not None else transcript)
+    grounded, why = write_reply(ctx, op.merchant_id, acct["id"], message, lang)
     if grounded:
         out.update(reply=grounded, reply_source="grounded")
         if audio:
@@ -298,7 +342,7 @@ def process(ctx: Ctx, op, *, phone: str | None, text: str | None = None, audio: 
             except Exception:
                 pass
     ctx.db.trace(op.merchant_id, "customer_message", actor, account_id=acct["id"],
-                 input={"via": "voice" if audio else "text", "transcript": transcript},
+                 input={"via": "image" if ocr is not None else "voice" if audio else "text", "transcript": transcript},
                  result={"claims": out["claims"], "decision": d.code, "reply_source": out["reply_source"],
                          "reply": out.get("reply"), "language": lang})
     return out
