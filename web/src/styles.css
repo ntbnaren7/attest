@@ -1526,3 +1526,38 @@ code {
 .live-btn .dot {
   --s: var(--call);
 }
+
+/* ------------------------------------------------------------------ view switch */
+.nav {
+  display: flex;
+  gap: 2px;
+}
+.nav button {
+  border: 0;
+  background: transparent;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 560;
+  color: var(--muted);
+  cursor: pointer;
+}
+.nav button:hover {
+  color: var(--ink);
+  background: var(--hover);
+}
+.nav button[aria-current='page'] {
+  color: var(--ink);
+  background: var(--sunken);
+}
+.facts li > input[type='checkbox'] {
+  width: 15px;
+  height: 15px;
+}
+@media (max-width: 760px) {
+  .nav button {
+    padding: 0 8px;
+    font-size: 13px;
+  }
+}

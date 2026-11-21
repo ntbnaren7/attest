@@ -14,6 +14,7 @@ import { PeopleList } from './components/PeopleList'
 import { Ledger } from './components/Summary'
 import { TopBar } from './components/TopBar'
 import { LivePanel } from './components/LivePanel'
+import { ReconView } from './components/ReconView'
 
 type Pending = { approval: Approval; name: string; reason: string }
 
@@ -26,6 +27,7 @@ export default function App() {
   const [approve, setApprove] = useState<Pending | null>(null)
   const [importing, setImporting] = useState(false)
   const [liveOpen, setLiveOpen] = useState(false)
+  const [view, setView] = useState<'queue' | 'recon'>('queue')
   const [feed, setFeed] = useState<QueueChange[]>([])
   const [flash, setFlash] = useState<Set<string>>(new Set())
 
@@ -103,6 +105,8 @@ export default function App() {
         me={me}
         onSwitch={switchTo}
         onLive={() => setLiveOpen(true)}
+        view={view}
+        onView={(v) => transition(() => setView(v))}
         onSignOut={async () => {
           await api.logout().catch(() => {})
           setMe('anon')
@@ -110,6 +114,10 @@ export default function App() {
         }}
       />
       <main className="page">
+        {view === 'recon' ? (
+          <ReconView />
+        ) : (
+        <>
         <div className="page-head">
           <div>
             <div className="overline">{new Date().toLocaleDateString(lang, { weekday: 'long', day: 'numeric', month: 'long' })}</div>
@@ -138,6 +146,8 @@ export default function App() {
             <ChangeFeed items={feed} onOpen={setOpen} />
           </aside>
         </div>
+        </>
+        )}
       </main>
 
       {liveOpen && (

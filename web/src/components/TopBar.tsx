@@ -17,7 +17,14 @@ export function LangSelect() {
   )
 }
 
-export function TopBar({ me, onSwitch, onSignOut, onLive }: { me: Me; onSwitch: (persona: string) => void; onSignOut: () => void; onLive: () => void }) {
+export function TopBar({ me, onSwitch, onSignOut, onLive, view, onView }: {
+  me: Me
+  onSwitch: (persona: string) => void
+  onSignOut: () => void
+  onLive: () => void
+  view: 'queue' | 'recon'
+  onView: (v: 'queue' | 'recon') => void
+}) {
   const { t, theme, toggleTheme } = usePrefs()
   const ig = me.integrations
   const states = [
@@ -35,6 +42,15 @@ export function TopBar({ me, onSwitch, onSignOut, onLive }: { me: Me; onSwitch: 
           <Mark />
           <span className="name">Invariant</span>
         </div>
+
+        <nav className="nav" aria-label="Views">
+          <button type="button" aria-current={view === 'queue' ? 'page' : undefined} onClick={() => onView('queue')}>
+            {t.navQueue}
+          </button>
+          <button type="button" aria-current={view === 'recon' ? 'page' : undefined} onClick={() => onView('recon')}>
+            {t.navRecon}
+          </button>
+        </nav>
 
         {me.demo && personas.length > 1 ? (
           <div className="segmented" role="group" aria-label={t.scenario}>

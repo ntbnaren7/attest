@@ -199,6 +199,10 @@ export const api = {
   liveSample: (which: string) => call<ImportReport & { queue?: Record<Decision, number> }>(`/api/live/sample/${which}`, { method: 'POST' }),
   livePoll: () => call<{ checked: number; at: string }>('/api/live/poll', { method: 'POST' }),
   liveCheck: (relay: boolean) => call<LiveCheck>('/api/live/check', { method: 'POST', body: JSON.stringify({ relay }) }),
+  reconStatus: () => call<{ available: boolean; reason: string; mode: 'recorded' | 'live'; run: string }>('/api/recon/status'),
+  reconRun: () => call<ReconView>('/api/recon/run', { method: 'POST' }),
+  reconApprove: (thread_id: string, decisions: Record<string, boolean>) =>
+    call<ReconView>('/api/recon/approve', { method: 'POST', body: JSON.stringify({ thread_id, decisions }) }),
   help: (topic: string, lang: Lang) => call<{ text: string; audio_b64: string | null }>(`/api/help/${encodeURIComponent(topic)}?lang=${lang}`),
 }
 
@@ -231,3 +235,33 @@ export interface LiveStatus {
 }
 export interface CheckResult { ok: boolean | null; detail: string; ms?: number }
 export interface LiveCheck { cashfree: CheckResult; sarvam: CheckResult; relay: CheckResult; at: string }
+
+export interface ReconFinding {
+  agent: string
+  kind: string
+  entity: string
+  amount: number
+  severity: 'critical' | 'high' | 'medium' | 'low'
+  summary: string
+  action: string
+  needs_approval: boolean
+  deadline?: { due: string; days_left: number; overdue: boolean; basis: string } | null
+}
+export interface ReconPending {
+  id: string
+  action: string
+  amount: number
+  summary: string
+  plan: Record<string, unknown>
+}
+export interface ReconView {
+  thread_id: string
+  run: string
+  mode: 'recorded' | 'live'
+  brief: string | null
+  tieout: { ok: boolean; sections: { title: string; lines: { label: string; amount: number }[]; residual: number; ok: boolean; note: string }[] }
+  findings: ReconFinding[]
+  pending: ReconPending[]
+  results: { id: string; status: string; plan: Record<string, unknown> }[]
+  kpi: { findings: number; critical: number; high: number; at_risk: number; approvals: number }
+}
