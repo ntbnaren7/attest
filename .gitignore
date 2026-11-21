@@ -42,3 +42,6 @@ npm-debug.log*
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# teammate's Cashfree 2FA key files (machine-local)
+recon/keys/

@@ -36,6 +36,17 @@ def mode() -> str:
     return "live" if os.environ.get("RECON_CF_PG_CLIENT_ID") and os.environ.get("RECON_CF_PG_CLIENT_SECRET") else "recorded"
 
 
+def _resolve(path: str):
+    p = os.path.expanduser(path)
+    return p if os.path.isabs(p) else str(ROOT / p)
+
+
+def payouts_live() -> bool:
+    """Payout reads need the keys and the 2FA public-key file to be present on this machine."""
+    key = os.environ.get("RECON_CF_PUBLIC_KEY_PATH", "")
+    return bool(os.environ.get("RECON_CF_PAYOUT_CLIENT_SECRET") and key and os.path.exists(_resolve(key)))
+
+
 def _engine():
     """Import the engine once and point its Cashfree reads at the chosen source."""
     with _lock:
@@ -46,6 +57,13 @@ def _engine():
         if mode() == "live":
             os.environ["CF_PG_CLIENT_ID"] = os.environ["RECON_CF_PG_CLIENT_ID"]
             os.environ["CF_PG_CLIENT_SECRET"] = os.environ["RECON_CF_PG_CLIENT_SECRET"]
+        if payouts_live():
+            # Payouts and Secure ID requests must be signed with the account's 2FA public key (.pem).
+            for ours, theirs in (("RECON_CF_PAYOUT_CLIENT_ID", "CF_PAYOUT_CLIENT_ID"), ("RECON_CF_PAYOUT_CLIENT_SECRET", "CF_PAYOUT_CLIENT_SECRET"),
+                                 ("RECON_CF_VERIFY_CLIENT_ID", "CF_VERIFY_CLIENT_ID"), ("RECON_CF_VERIFY_CLIENT_SECRET", "CF_VERIFY_CLIENT_SECRET"),
+                                 ("RECON_CF_PUBLIC_KEY_PATH", "CF_PUBLIC_KEY_PATH"), ("RECON_CF_VERIFY_PUBLIC_KEY_PATH", "CF_VERIFY_PUBLIC_KEY_PATH")):
+                if os.environ.get(ours):
+                    os.environ[theirs] = str(_resolve(os.environ[ours]))
         from agent.sources import cashfree as cfio  # noqa: E402 (vendored package)
 
         original_try = cfio._try

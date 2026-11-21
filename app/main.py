@@ -81,7 +81,8 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
     @app.get("/api/recon/status")
     def recon_status(op: auth.Operator = Depends(operator)):
         ok, why = recon.available()
-        return {"available": ok, "reason": why, "mode": recon.mode(), "run": recon.RUN, "agents": recon.AGENTS}
+        return {"available": ok, "reason": why, "mode": recon.mode(), "payouts_live": recon.payouts_live(),
+                "run": recon.RUN, "agents": recon.AGENTS}
 
     @app.post("/api/recon/run")
     async def recon_run(op: auth.Operator = Depends(operator)):
