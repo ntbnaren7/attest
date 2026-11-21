@@ -113,7 +113,7 @@ export default function App() {
           setQ(null)
         }}
       />
-      <main className="page">
+      <main className="page fade" key={`${view}-${me.operator.username}`}>
         {view === 'recon' ? (
           <ReconView />
         ) : (

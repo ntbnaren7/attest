@@ -31,6 +31,7 @@ export function PeopleList({ q, filter, setFilter, flash, onOpen }: {
         ))}
       </div>
 
+      <div className="fade" key={filter ?? 'all'}>
       <div className="tab-note">
         <span>
           {filter && <>{t[`groupHint_${filter}` as Key]} · </>}
@@ -44,7 +45,7 @@ export function PeopleList({ q, filter, setFilter, flash, onOpen }: {
       </div>
 
       {shown.length === 0 && <div className="empty">{rows.length ? t.empty : t.emptyStart}</div>}
-      <ul className="rows" key={filter ?? 'all'}>
+      <ul className="rows">
         {shown.map((r) => {
           const late = r.decision === 'CONTACT' && !r.contact_allowed_now
           return (
@@ -71,6 +72,7 @@ export function PeopleList({ q, filter, setFilter, flash, onOpen }: {
           )
         })}
       </ul>
+      </div>
     </section>
   )
 }

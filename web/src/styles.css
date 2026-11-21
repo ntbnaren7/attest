@@ -1561,3 +1561,19 @@ code {
     font-size: 13px;
   }
 }
+
+/* ------------------------------------------------------------------ fade (works in every browser)
+   Keyed containers re-mount on view, scenario and tab changes and fade in. */
+.fade {
+  animation: fade-in 260ms var(--ease) both;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
