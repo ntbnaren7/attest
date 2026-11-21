@@ -5,6 +5,7 @@ import { errText } from '../errors'
 import { shrink } from '../image'
 import { usePrefs } from '../prefs'
 import { useExit } from '../motion'
+import { NewCustomers } from './NewCustomers'
 
 /** Photograph a ledger / collection-diary page: OCR reads it, each line updates the matching account. */
 export function LedgerScan({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
@@ -34,7 +35,8 @@ export function LedgerScan({ onClose, onDone }: { onClose: () => void; onDone: (
   }
 
   const matched = res?.lines.filter((l) => l.account) ?? []
-  const other = res?.lines.filter((l) => !l.account) ?? []
+  const proposals = res?.lines.filter((l) => !l.account && l.proposed) ?? []
+  const other = res?.lines.filter((l) => !l.account && !l.proposed) ?? []
 
   return (
     <div className="dialog-wrap">
@@ -67,6 +69,23 @@ export function LedgerScan({ onClose, onDone }: { onClose: () => void; onDone: (
                   </li>
                 ))}
               </ul>
+              {proposals.length > 0 && (
+                <div style={{ marginTop: 14 }}>
+                  <div className="overline" style={{ marginBottom: 6 }}>{t.newOnPage}</div>
+                  <NewCustomers
+                    source="ledger"
+                    onAdded={onDone}
+                    initial={proposals.map((l) => ({
+                      name: l.proposed!.name,
+                      amount: l.proposed!.amount_paise != null ? String(l.proposed!.amount_paise / 100) : '',
+                      phone: l.proposed!.phone,
+                      language: '',
+                      note: l.proposed!.note,
+                      on: l.proposed!.amount_paise != null,
+                    }))}
+                  />
+                </div>
+              )}
               {other.length > 0 && (
                 <details className="small muted">
                   <summary>{other.length} {t.linesNotLinked}</summary>

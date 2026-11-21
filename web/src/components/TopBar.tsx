@@ -76,7 +76,7 @@ export function TopBar({ me, onSwitch, onSignOut, onLive, view, onView }: {
         <span className="spacer" />
 
         <button className="live-btn" onClick={onLive} title="Run the live demo: checks, payment and watcher">
-          <span className="dot pulse-dot" aria-hidden="true" /> Live test
+          <span className="dot pulse-dot" aria-hidden="true" /> <span className="label">Live test</span>
         </button>
 
         <span className="systems" title={states.map((x) => `${x.name}: ${word(x.s)}`).join(' · ')}>

@@ -20,6 +20,8 @@ def agent_of(r: dict) -> str:
                 "outreach": "Recovery agent"}.get(tgt, tgt)
     if k == "customer_message":
         return "Customer query agent"
+    if k == "business_message":
+        return "Business → customer"
     if k in ("utterance", "extraction"):
         return "Orchestrator"
     if k == "agent_run":
@@ -52,6 +54,8 @@ def text_of(r: dict, res: dict, inp: dict) -> str:
     if k == "customer_message":
         said = (inp.get("transcript") or "").replace("\n", " ")
         return f"{inp.get('via', 'text')}: “{said[:70]}{'…' if len(said) > 70 else ''}” → replied ({res.get('reply_source')})"
+    if k == "business_message":
+        return f"Sent: “{(inp.get('text') or '')[:80]}”"
     if k == "daemon_prepared":
         return f"Prepared {res.get('name')} · {res.get('amount')}: {res.get('strategy')} Awaiting approval." \
             if res.get("status") == "needs_input" else f"Skipped {res.get('ref')}: {res.get('status')}"

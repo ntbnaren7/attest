@@ -13,7 +13,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from fastapi.concurrency import run_in_threadpool
 from fastapi.staticfiles import StaticFiles
 
-from . import approvals, auth, coordinator, daemon, importer, inbox, ledger, live, ops, recon, webhooks
+from . import approvals, auth, coordinator, customers, daemon, importer, inbox, ledger, live, ops, recon, webhooks
 from .config import ROOT, settings as default_settings
 from .context import Ctx
 from .db import DB, now as dbnow
@@ -131,6 +131,28 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
             raise HTTPException(503, str(e))
         finally:
             sec.inflight.release(op.id)
+
+    @app.get("/api/inbox/draft/{account_id}")
+    def inbox_draft(account_id: str, op: auth.Operator = Depends(operator)):
+        sec.limit("read", f"draft:{op.id}")
+        if not ctx.db.one("SELECT 1 FROM accounts WHERE id=? AND merchant_id=?", (account_id, op.merchant_id)):
+            raise HTTPException(404, "not found")
+        return inbox.draft_reminder(ctx, op.merchant_id, account_id)
+
+    @app.post("/api/inbox/send")
+    async def inbox_send_business(request: Request, op: auth.Operator = Depends(operator)):
+        """The business writes to the customer from the dashboard."""
+        sec.limit("assistant", op.id)
+        body = await request.json()
+        text = str(body.get("text", "")).strip()
+        if not text or len(text) > MAX_UTTERANCE_CHARS:
+            raise HTTPException(400, "Write a message (up to 500 characters).")
+        try:
+            return inbox.send_business(ctx, op, str(body.get("account_id", "")), text)
+        except LookupError:
+            raise HTTPException(404, "not found")
+        except PermissionError as e:
+            raise HTTPException(409, str(e))
 
     @app.get("/api/inbox/thread/{account_id}")
     def inbox_thread(account_id: str, op: auth.Operator = Depends(operator)):
@@ -337,6 +359,20 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
         if len(content) > 5_000_000:
             raise HTTPException(413, "file too large")
         rep = importer.import_batch(ctx, op.merchant_id, file.filename or "upload.csv", content, f"operator:{op.username}")
+        if rep.get("ok"):
+            rep["queue"] = build_queue(ctx, op.merchant_id, rep["batch_id"])["counts"]
+        return JSONResponse(rep, status_code=200 if rep.get("ok") else 400)
+
+    @app.post("/api/customers")
+    async def add_customers(request: Request, op: auth.Operator = Depends(operator)):
+        """Add one or more customers (by hand, or confirmed from a scanned ledger page)."""
+        sec.limit("import", op.id)
+        body = await request.json()
+        items = body.get("customers") or []
+        if not isinstance(items, list) or not items:
+            raise HTTPException(400, "Add at least one customer.")
+        rep = customers.add(ctx, op.merchant_id, items, f"operator:{op.username}",
+                            "ledger_scan" if body.get("source") == "ledger" else "added_by_hand")
         if rep.get("ok"):
             rep["queue"] = build_queue(ctx, op.merchant_id, rep["batch_id"])["counts"]
         return JSONResponse(rep, status_code=200 if rep.get("ok") else 400)

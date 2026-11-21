@@ -1,3 +1,4 @@
+import { toWav } from './audio'
 // Thin client for the receivables backend. All money is integer paise.
 
 export type Decision = 'CONTACT' | 'HOLD' | 'REVIEW' | 'CLOSED'
@@ -188,9 +189,9 @@ export const api = {
   },
   say: (text: string, language: Lang | null, conversation_id: string | null, account_id: string | null) =>
     call<Turn>('/api/coordinator/text', { method: 'POST', body: JSON.stringify({ text, language, conversation_id, account_id }) }),
-  speak: (audio: Blob, language: Lang | null, conversation_id: string | null, account_id: string | null) => {
+  speak: async (audio: Blob, language: Lang | null, conversation_id: string | null, account_id: string | null) => {
     const fd = new FormData()
-    fd.append('audio', audio, audio.type.includes('mp4') ? 'speech.m4a' : 'speech.webm')
+    fd.append('audio', await toWav(audio), 'speech.wav')
     fd.append('language', language ?? 'unknown')
     if (conversation_id) fd.append('conversation_id', conversation_id)
     if (account_id) fd.append('account_id', account_id)
@@ -206,15 +207,21 @@ export const api = {
   reconApprove: (thread_id: string, decisions: Record<string, boolean>) =>
     call<ReconView>('/api/recon/approve', { method: 'POST', body: JSON.stringify({ thread_id, decisions }) }),
   inboxThread: (accountId: string) => call<ChatThread>(`/api/inbox/thread/${encodeURIComponent(accountId)}`),
-  inboxSend: (accountId: string, text: string | null, audio: Blob | null, image: Blob | null = null) => {
+  inboxSend: async (accountId: string, text: string | null, audio: Blob | null, image: Blob | null = null) => {
     const fd = new FormData()
     fd.append('account_id', accountId)
     if (text) fd.append('text', text)
-    if (audio) fd.append('audio', audio, audio.type.includes('mp4') ? 'voice_note.m4a' : 'voice_note.webm')
+    if (audio) fd.append('audio', await toWav(audio), 'voice_note.wav')
     if (image) fd.append('image', image, 'photo.jpg')
     return call<ChatResult>('/api/inbox/message', { method: 'POST', body: fd })
   },
   ops: () => call<OpsSummary>('/api/ops'),
+  addCustomers: (customers: Record<string, string>[], source: 'hand' | 'ledger') =>
+    call<ImportReport & { refs: string[] }>('/api/customers', { method: 'POST', body: JSON.stringify({ customers, source }) }),
+  inboxDraft: (accountId: string) =>
+    call<{ ok: boolean; text?: string; reason?: string; language: string }>(`/api/inbox/draft/${encodeURIComponent(accountId)}`),
+  inboxBusiness: (accountId: string, text: string) =>
+    call<{ ok: boolean }>('/api/inbox/send', { method: 'POST', body: JSON.stringify({ account_id: accountId, text }) }),
   ledgerScan: (image: Blob, lang: string) => {
     const fd = new FormData()
     fd.append('image', image, 'ledger.jpg')
@@ -290,7 +297,7 @@ export interface LedgerResult {
   review_required: boolean
   matched: number
   lines: { line: string; account: { id: string; external_ref: string; display_name: string } | null; reply?: string;
-    decision?: string; code?: string }[]
+    decision?: string; code?: string; proposed?: { name: string; amount_paise: number | null; phone: string; note: string } | null }[]
 }
 export interface OpsEvent {
   id: number
@@ -324,6 +331,7 @@ export interface OpsSummary {
 }
 export interface ChatMessage {
   ts: string
+  from?: 'customer' | 'business'
   via: 'text' | 'voice' | 'image' | null
   text: string | null
   reply: string | null

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { ArrowUp, Loader2, Mic, Paperclip } from 'lucide-react'
+import { ArrowUp, BellRing, Loader2, Mic, Paperclip } from 'lucide-react'
 import { api, type ChatMessage, type ChatThread, type Queue } from '../api'
 import { errText } from '../errors'
 import { inr, time } from '../format'
@@ -42,6 +42,7 @@ export function CustomerChat({ q, onChanged }: { q: Queue | null; onChanged: () 
   const [text, setText] = useState('')
   const [state, setState] = useState<'idle' | 'rec' | 'busy'>('idle')
   const [err, setErr] = useState('')
+  const [as, setAs] = useState<'customer' | 'business'>('customer')
   const end = useRef<HTMLDivElement>(null)
   const rec = useRef<MediaRecorder | null>(null)
   const chunks = useRef<Blob[]>([])
@@ -93,7 +94,39 @@ export function CustomerChat({ q, onChanged }: { q: Queue | null; onChanged: () 
 
   function submit(e: FormEvent) {
     e.preventDefault()
-    if (text.trim()) send({ text: text.trim() })
+    if (!text.trim()) return
+    if (as === 'business') sendBusiness(text.trim())
+    else send({ text: text.trim() })
+  }
+
+  /** The business writes to the customer (do-not-contact and the amount guard are enforced on the server). */
+  async function sendBusiness(body: string) {
+    if (!active) return
+    setState('busy')
+    setErr('')
+    try {
+      await api.inboxBusiness(active, body)
+      setMsgs((m) => [...m, { ts: new Date().toISOString(), from: 'business', via: 'text', text: null, reply: body,
+        reply_source: 'business', claims: [], status: null, language: null }])
+      setText('')
+      onChanged()
+    } catch (e) {
+      setErr(errText(e, t))
+    } finally {
+      setState('idle')
+    }
+  }
+
+  async function draftReminder() {
+    if (!active) return
+    setErr('')
+    try {
+      const d = await api.inboxDraft(active)
+      if (d.ok && d.text) setText(d.text)
+      else setErr(`${t.noReminder}: ${d.reason ?? ''}`)
+    } catch (e) {
+      setErr(errText(e, t))
+    }
   }
 
   async function startRec() {
@@ -170,6 +203,16 @@ export function CustomerChat({ q, onChanged }: { q: Queue | null; onChanged: () 
             {msgs.length === 0 && <div className="chat-empty">{t.noMessages}</div>}
             {msgs.map((m, i) => (
               <div key={`${m.ts}-${i}`} className="chat-pair">
+                {m.from === 'business' ? (
+                  <div className="bubble them biz">
+                    <div className="voice-tag">{t.fromBusiness}</div>
+                    <div>
+                      <Linked text={m.reply ?? ''} />
+                    </div>
+                    <span className="stamp">{time(m.ts)}</span>
+                  </div>
+                ) : (
+                <>
                 <div className="bubble me">
                   {m.via === 'voice' && (
                     <div className="voice-tag">
@@ -214,21 +257,37 @@ export function CustomerChat({ q, onChanged }: { q: Queue | null; onChanged: () 
                     </div>
                   )
                 )}
+                </>
+                )}
               </div>
             ))}
             <div ref={end} />
           </div>
           {err && <p className="err" style={{ margin: '0 16px 8px' }}>{err}</p>}
+          <div className="chat-as">
+            <span className="small muted">{t.sendAs}</span>
+            <div className="segmented" role="group" aria-label={t.sendAs}>
+              <button type="button" aria-pressed={as === 'customer'} onClick={() => setAs('customer')}>{t.asCustomer}</button>
+              <button type="button" aria-pressed={as === 'business'} onClick={() => setAs('business')}>{t.asBusiness}</button>
+            </div>
+            {as === 'business' && (
+              <button type="button" className="btn text" onClick={draftReminder} disabled={!active}>
+                <BellRing size={15} /> {t.draftReminder}
+              </button>
+            )}
+          </div>
           <form className="chat-input" onSubmit={submit}>
             <input ref={picker} type="file" accept="image/*,application/pdf" hidden onChange={(e) => pickPhoto(e.target.files?.[0])} />
-            <button type="button" className="btn round ghost" aria-label={t.sendPhoto} title={t.sendPhoto}
-              disabled={!active || state !== 'idle'} onClick={() => picker.current?.click()}>
-              <Paperclip size={18} strokeWidth={2} />
-            </button>
-            <input className="field" value={text} onChange={(e) => setText(e.target.value)} placeholder={t.typeMessage} aria-label={t.typeMessage}
+            {as === 'customer' && (
+              <button type="button" className="btn round ghost" aria-label={t.sendPhoto} title={t.sendPhoto}
+                disabled={!active || state !== 'idle'} onClick={() => picker.current?.click()}>
+                <Paperclip size={18} strokeWidth={2} />
+              </button>
+            )}
+            <input className="field" value={text} onChange={(e) => setText(e.target.value)} placeholder={as === 'business' ? t.typeAsBusiness : t.typeMessage} aria-label={t.typeMessage}
               maxLength={500} disabled={!active} />
-            {text.trim() ? (
-              <button className="btn round" disabled={state !== 'idle'} aria-label={t.send}>
+            {text.trim() || as === 'business' ? (
+              <button className="btn round" disabled={state !== 'idle' || !text.trim()} aria-label={t.send}>
                 <ArrowUp size={18} strokeWidth={2.2} />
               </button>
             ) : (

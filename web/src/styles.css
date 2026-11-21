@@ -1949,3 +1949,58 @@ code {
     padding: 0 16px;
   }
 }
+
+/* chat: let the message pane scroll inside the fixed-height grid (flex/grid children need min-height: 0) */
+.chat-app > * {
+  min-height: 0;
+}
+.chat-pane {
+  min-height: 0;
+  overflow: hidden;
+}
+.chat-scroll {
+  min-height: 0;
+  overscroll-behavior: contain;
+}
+.chat-as {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px 0;
+  background: var(--raised);
+  border-top: 1px solid var(--rule);
+}
+.chat-as + .chat-input {
+  border-top: 0;
+}
+.bubble.biz {
+  border-left: 3px solid var(--accent);
+}
+/* new customers form */
+.newcust .nc-head,
+.newcust .nc-row {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1.6fr) minmax(0, 0.9fr) minmax(0, 1fr) 32px;
+  gap: 8px;
+  align-items: center;
+}
+.newcust .nc-row {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.newcust .nc-note {
+  grid-column: 2 / -1;
+}
+.newcust .field {
+  height: 36px;
+}
+/* top bar: never wrap a nav label */
+.nav {
+  flex-shrink: 0;
+}
+@media (max-width: 1200px) {
+  .wordmark .name,
+  .live-btn .label {
+    display: none;
+  }
+}

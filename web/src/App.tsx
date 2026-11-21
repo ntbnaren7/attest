@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Camera, Upload } from 'lucide-react'
+import { Camera, Upload, UserPlus } from 'lucide-react'
 import { api, ApiError, type Approval, type Decision, type Me, type OpsEvent, type Queue, type QueueChange } from './api'
 import { usePrefs } from './prefs'
 import { transition } from './motion'
@@ -18,6 +18,7 @@ import { ReconView } from './components/ReconView'
 import { CustomerChat } from './components/CustomerChat'
 import { OpsView } from './components/OpsView'
 import { LedgerScan } from './components/LedgerScan'
+import { AddCustomer } from './components/AddCustomer'
 
 type Pending = { approval: Approval; name: string; reason: string }
 
@@ -30,6 +31,7 @@ export default function App() {
   const [approve, setApprove] = useState<Pending | null>(null)
   const [importing, setImporting] = useState(false)
   const [scanning, setScanning] = useState(false)
+  const [adding, setAdding] = useState(false)
   const [liveOpen, setLiveOpen] = useState(false)
   const [view, setView] = useState<'queue' | 'chat' | 'recon' | 'ops'>('queue')
   const [events, setEvents] = useState<OpsEvent[]>([])
@@ -156,6 +158,9 @@ export default function App() {
             <h1>{t.today}</h1>
           </div>
           <div className="head-actions">
+            <button className="btn secondary" onClick={() => setAdding(true)}>
+              <UserPlus size={15} strokeWidth={1.9} /> {t.addCustomer}
+            </button>
             <button className="btn secondary" onClick={() => setScanning(true)}>
               <Camera size={15} strokeWidth={1.9} /> {t.scanLedger}
             </button>
@@ -210,6 +215,7 @@ export default function App() {
       )}
       {importing && <ImportDialog onClose={() => setImporting(false)} onDone={refresh} />}
       {scanning && <LedgerScan onClose={() => setScanning(false)} onDone={refresh} />}
+      {adding && <AddCustomer onClose={() => setAdding(false)} onDone={refresh} />}
     </>
   )
 }

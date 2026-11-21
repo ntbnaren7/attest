@@ -142,11 +142,15 @@ def facts_for(ctx: Ctx, merchant_id: str, account_id: str) -> dict:
 
 def history(ctx: Ctx, merchant_id: str, account_id: str, limit: int = 20) -> list[dict]:
     import json as _json
-    rows = ctx.db.all("SELECT input_json, result_json, ts FROM trace WHERE merchant_id=? AND account_id=? AND kind='customer_message' "
-                      "ORDER BY id DESC LIMIT ?", (merchant_id, account_id, limit))
+    rows = ctx.db.all("SELECT kind, input_json, result_json, ts FROM trace WHERE merchant_id=? AND account_id=? "
+                      "AND kind IN ('customer_message','business_message') ORDER BY id DESC LIMIT ?", (merchant_id, account_id, limit))
     out = []
     for r in reversed(rows):
         i, res = _json.loads(r["input_json"] or "{}"), _json.loads(r["result_json"] or "{}")
+        if r["kind"] == "business_message":
+            out.append({"ts": r["ts"], "from": "business", "via": "text", "text": None, "reply": i.get("text"),
+                        "reply_source": "business", "claims": [], "status": None, "language": i.get("language")})
+            continue
         out.append({"ts": r["ts"], "via": i.get("via"), "text": i.get("transcript"), "reply": res.get("reply"),
                     "reply_source": res.get("reply_source"), "claims": [c["kind"] for c in res.get("claims", [])],
                     "status": res.get("decision"), "language": res.get("language")})
@@ -365,3 +369,46 @@ def process(ctx: Ctx, op, *, phone: str | None, text: str | None = None, audio: 
                  result={"claims": out["claims"], "decision": d.code, "reply_source": out["reply_source"],
                          "reply": out.get("reply"), "language": lang})
     return out
+
+
+# ---------------------------------------------------------------- business -> customer messages
+REMINDER = {
+    "en-IN": "Hi {name}, a gentle reminder that {amt} is due on account {ref}{since}.{link} Reply here if you have already paid or need more time.",
+    "hi-IN": "नमस्ते {name}, खाता {ref} पर {amt} बकाया है{since}।{link} अगर आप भुगतान कर चुके हैं या समय चाहिए तो यहीं जवाब दें।",
+    "ta-IN": "வணக்கம் {name}, கணக்கு {ref}-இல் {amt} நிலுவையில் உள்ளது{since}.{link} ஏற்கனவே செலுத்தியிருந்தால் அல்லது நேரம் தேவைப்பட்டால் இங்கே பதில் அனுப்பவும்.",
+    "kn-IN": "ನಮಸ್ಕಾರ {name}, ಖಾತೆ {ref} ನಲ್ಲಿ {amt} ಬಾಕಿ ಇದೆ{since}.{link} ಈಗಾಗಲೇ ಪಾವತಿಸಿದ್ದರೆ ಅಥವಾ ಸಮಯ ಬೇಕಿದ್ದರೆ ಇಲ್ಲೇ ಉತ್ತರಿಸಿ.",
+}
+LINK_LINE = {"en-IN": " Pay here: {url}", "hi-IN": " यहाँ भुगतान करें: {url}", "ta-IN": " இங்கே செலுத்தவும்: {url}",
+             "kn-IN": " ಇಲ್ಲಿ ಪಾವತಿಸಿ: {url}"}
+SINCE = {"en-IN": " (due since {d})", "hi-IN": " ({d} से देय)", "ta-IN": " ({d} முதல்)", "kn-IN": " ({d} ರಿಂದ)"}
+
+
+def draft_reminder(ctx: Ctx, merchant_id: str, account_id: str) -> dict:
+    """A reminder written only from verified facts, in the customer's language. Only for contactable accounts."""
+    a = ctx.db.one("SELECT language FROM accounts WHERE id=? AND merchant_id=?", (account_id, merchant_id))
+    f = facts_for(ctx, merchant_id, account_id)
+    d = evaluate(ctx, merchant_id, account_id)
+    lang = a["language"] if a and a["language"] in REMINDER else "en-IN"
+    if d.decision != "CONTACT":
+        return {"ok": False, "reason": d.reason, "language": lang}
+    link = f["payment_link"]
+    text = REMINDER[lang].format(name=(f["customer_name"] or "").split(" ")[0] or f["account"], amt=f["amount_due"], ref=f["account"],
+                                 since=SINCE[lang].format(d=f["due_dates"][0]) if f["due_dates"] else "",
+                                 link=LINK_LINE[lang].format(url=link["url"]) if link else "")
+    return {"ok": True, "text": text, "language": lang, "has_link": bool(link)}
+
+
+def send_business(ctx: Ctx, op, account_id: str, text: str) -> dict:
+    """The business writes to the customer (simulated channel in the dashboard). Do-not-contact is enforced."""
+    a = ctx.db.one("SELECT do_not_contact, language FROM accounts WHERE id=? AND merchant_id=?", (account_id, op.merchant_id))
+    if not a:
+        raise LookupError("not found")
+    if a["do_not_contact"]:
+        raise PermissionError("This customer asked not to be contacted. A person must choose an approved channel.")
+    f = facts_for(ctx, op.merchant_id, account_id)
+    ok, why = guard_reply(text, set(f["_allowed_paise"]))
+    if not ok:
+        raise PermissionError(f"Not sent: {why}. Use only verified amounts and do not promise refunds or waivers.")
+    ctx.db.trace(op.merchant_id, "business_message", f"operator:{op.username}", account_id=account_id,
+                 input={"text": text, "language": a["language"]}, result={"delivered": "dashboard_chat"})
+    return {"ok": True}

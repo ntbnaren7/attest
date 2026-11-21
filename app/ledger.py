@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import re
 
-from . import coordinator, inbox
+from . import coordinator, customers, inbox
 from .context import Ctx
 
 REF = re.compile(r"\b([A-Z]{1,4})[\s\-/]?(\d{2,6})\b", re.IGNORECASE)
@@ -50,7 +50,7 @@ def scan(ctx: Ctx, op, image: bytes, filename: str, language: str = "en-IN") -> 
     for line in lines_of(text):
         acct = match_line(rows, line)
         if not acct:
-            results.append({"line": line, "account": None})
+            results.append({"line": line, "account": None, "proposed": customers.propose(line)})
             continue
         turn = coordinator.process(ctx, op, f"{acct['external_ref']}: {line}", via="ledger_photo",
                                    account_hint=acct["id"], speak=False, reply_language=language)
