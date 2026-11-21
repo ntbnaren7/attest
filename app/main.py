@@ -1,6 +1,7 @@
 """HTTP API + operator console."""
 from __future__ import annotations
 
+import asyncio
 import html
 import json
 import logging
@@ -8,11 +9,11 @@ import os
 import time
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response, StreamingResponse
 from fastapi.concurrency import run_in_threadpool
 from fastapi.staticfiles import StaticFiles
 
-from . import approvals, auth, coordinator, daemon, importer, inbox, live, recon, webhooks
+from . import approvals, auth, coordinator, daemon, importer, inbox, live, ops, recon, webhooks
 from .config import ROOT, settings as default_settings
 from .context import Ctx
 from .db import now as dbnow
@@ -121,6 +122,44 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
         facts.pop("_allowed_paise", None)
         return {"facts": facts, "messages": inbox.history(ctx, op.merchant_id, account_id, limit=50)}
 
+    # ---------------------------------------------------------------- operations: live feed (SSE) and agent stats
+    streams: dict[str, int] = {}
+
+    @app.get("/api/ops")
+    def ops_summary(op: auth.Operator = Depends(operator)):
+        sec.limit("read", f"ops:{op.id}")
+        out = ops.summary(ctx, op.merchant_id)
+        t = getattr(app.state, "daemon", None)
+        out["daemon_running"] = bool(t and t.is_alive())
+        out["daemon_interval_seconds"] = ctx.settings.daemon_interval_seconds
+        return out
+
+    @app.get("/api/events")
+    async def events(request: Request, op: auth.Operator = Depends(operator)):
+        """Server-sent events: every new agent step, payment, webhook and daemon action for this merchant."""
+        if streams.get(op.id, 0) >= 3:
+            raise HTTPException(429, "Too many live connections.")
+        streams[op.id] = streams.get(op.id, 0) + 1
+        start = ctx.db.one("SELECT COALESCE(MAX(id),0) m FROM trace WHERE merchant_id=?", (op.merchant_id,))["m"]
+
+        async def gen():
+            last, quiet = start, 0
+            try:
+                yield "retry: 3000\n\n"
+                while not await request.is_disconnected():
+                    items, last = await run_in_threadpool(ops.feed, ctx, op.merchant_id, last, 50)
+                    for it in items:
+                        yield f"data: {json.dumps(it, ensure_ascii=False)}\n\n"
+                    quiet = 0 if items else quiet + 1
+                    if quiet and quiet % 15 == 0:
+                        yield ": ping\n\n"
+                    await asyncio.sleep(1)
+            finally:
+                streams[op.id] -= 1
+
+        return StreamingResponse(gen(), media_type="text/event-stream",
+                                 headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
     # ---------------------------------------------------------------- 24/7 recovery daemon
     @app.get("/api/daemon")
     def daemon_status(op: auth.Operator = Depends(operator)):
@@ -148,7 +187,10 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
         ok, why = recon.available()
         if not ok:
             raise HTTPException(503, f"Reconciliation engine unavailable: {why}")
-        return await run_in_threadpool(recon.run, op.merchant_id)
+        v = await run_in_threadpool(recon.run, op.merchant_id)
+        ctx.db.trace(op.merchant_id, "agent_run", "reconciliation_engine", target=f"operator:{op.username}",
+                     result={"ok": True, "findings": v["kpi"]["findings"], "at_risk": v["kpi"]["at_risk"], "mode": v["mode"]})
+        return v
 
     @app.post("/api/recon/approve")
     async def recon_approve(request: Request, op: auth.Operator = Depends(operator)):

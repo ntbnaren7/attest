@@ -118,6 +118,9 @@ def _view(st: dict, thread_id: str) -> dict:
     )
 
 
+LAST_RUN: dict[str, dict] = {}   # merchant_id -> last run's KPIs (for the operations view)
+
+
 def run(merchant_id: str) -> dict:
     E = _engine()
     thread_id = f"recon_{uuid.uuid4().hex[:10]}"
@@ -127,6 +130,7 @@ def run(merchant_id: str) -> dict:
                          {"configurable": {"thread_id": thread_id}})
     v = _view(st, thread_id)
     THREADS[thread_id]["pending"] = v["pending"]
+    LAST_RUN[merchant_id] = dict(v["kpi"], mode=v["mode"])
     return v
 
 

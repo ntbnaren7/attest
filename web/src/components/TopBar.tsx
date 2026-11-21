@@ -22,8 +22,8 @@ export function TopBar({ me, onSwitch, onSignOut, onLive, view, onView }: {
   onSwitch: (persona: string) => void
   onSignOut: () => void
   onLive: () => void
-  view: 'queue' | 'chat' | 'recon'
-  onView: (v: 'queue' | 'chat' | 'recon') => void
+  view: 'queue' | 'chat' | 'recon' | 'ops'
+  onView: (v: 'queue' | 'chat' | 'recon' | 'ops') => void
 }) {
   const { t, theme, toggleTheme } = usePrefs()
   const ig = me.integrations
@@ -52,6 +52,9 @@ export function TopBar({ me, onSwitch, onSignOut, onLive, view, onView }: {
           </button>
           <button type="button" aria-current={view === 'recon' ? 'page' : undefined} onClick={() => onView('recon')}>
             {t.navRecon}
+          </button>
+          <button type="button" aria-current={view === 'ops' ? 'page' : undefined} onClick={() => onView('ops')}>
+            {t.navOps}
           </button>
         </nav>
 

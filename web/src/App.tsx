@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Upload } from 'lucide-react'
-import { api, ApiError, type Approval, type Decision, type Me, type Queue, type QueueChange } from './api'
+import { api, ApiError, type Approval, type Decision, type Me, type OpsEvent, type Queue, type QueueChange } from './api'
 import { usePrefs } from './prefs'
 import { transition } from './motion'
 import { ApproveDialog } from './components/ApproveDialog'
@@ -16,6 +16,7 @@ import { TopBar } from './components/TopBar'
 import { LivePanel } from './components/LivePanel'
 import { ReconView } from './components/ReconView'
 import { CustomerChat } from './components/CustomerChat'
+import { OpsView } from './components/OpsView'
 
 type Pending = { approval: Approval; name: string; reason: string }
 
@@ -28,7 +29,10 @@ export default function App() {
   const [approve, setApprove] = useState<Pending | null>(null)
   const [importing, setImporting] = useState(false)
   const [liveOpen, setLiveOpen] = useState(false)
-  const [view, setView] = useState<'queue' | 'chat' | 'recon'>('queue')
+  const [view, setView] = useState<'queue' | 'chat' | 'recon' | 'ops'>('queue')
+  const [events, setEvents] = useState<OpsEvent[]>([])
+  const [live, setLive] = useState(false)
+  const kick = useRef<number | undefined>(undefined)
   const [feed, setFeed] = useState<QueueChange[]>([])
   const [flash, setFlash] = useState<Set<string>>(new Set())
 
@@ -77,9 +81,30 @@ export default function App() {
       .changes()
       .then((rows) => setFeed(rows.filter((r) => r.kind === 'queue_change' && r.result).map((r) => r.result as unknown as QueueChange)))
       .catch(() => {})
-    const timer = window.setInterval(refresh, 4000)
+    const timer = window.setInterval(refresh, 15000) // fallback; live events below refresh immediately
     return () => window.clearInterval(timer)
   }, [me, refresh])
+
+  /** Server-sent events: agent steps, payments, webhooks and daemon actions, as they happen. */
+  const username = me && me !== 'anon' ? me.operator.username : null
+  useEffect(() => {
+    if (!username) return
+    setEvents([])
+    const es = new EventSource('/api/events')
+    es.onopen = () => setLive(true)
+    es.onerror = () => setLive(false)
+    es.onmessage = (m) => {
+      try {
+        const ev = JSON.parse(m.data) as OpsEvent
+        setEvents((x) => [ev, ...x].slice(0, 80))
+      } catch {
+        return
+      }
+      window.clearTimeout(kick.current)
+      kick.current = window.setTimeout(refresh, 300)
+    }
+    return () => es.close()
+  }, [username, refresh])
 
   async function switchTo(persona: string) {
     if (me && me !== 'anon' && me.operator.username === persona) return
@@ -115,7 +140,9 @@ export default function App() {
         }}
       />
       <main className="page fade" key={`${view}-${me.operator.username}`}>
-        {view === 'recon' ? (
+        {view === 'ops' ? (
+          <OpsView events={events} live={live} />
+        ) : view === 'recon' ? (
           <ReconView />
         ) : view === 'chat' ? (
           <CustomerChat q={q} onChanged={refresh} />

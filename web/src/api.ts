@@ -212,6 +212,8 @@ export const api = {
     if (image) fd.append('image', image, 'photo.jpg')
     return call<ChatResult>('/api/inbox/message', { method: 'POST', body: fd })
   },
+  ops: () => call<OpsSummary>('/api/ops'),
+  daemonRun: () => call<DaemonPass>('/api/daemon/run', { method: 'POST' }),
   help: (topic: string, lang: Lang) => call<{ text: string; audio_b64: string | null }>(`/api/help/${encodeURIComponent(topic)}?lang=${lang}`),
 }
 
@@ -275,6 +277,36 @@ export interface ReconView {
   kpi: { findings: number; critical: number; high: number; at_risk: number; approvals: number }
 }
 
+export interface OpsEvent {
+  id: number
+  ts: string
+  kind: string
+  agent: string
+  ref: string | null
+  ok: boolean
+  text: string
+}
+export interface DaemonPass {
+  at: string
+  ranked: number
+  eligible: number
+  prepared: string[]
+  follow_ups_due: string[]
+  waiting_for_contact_hours: string[]
+  next: { ref: string; name: string } | null
+}
+export interface OpsSummary {
+  recovered_paise: number
+  leakage_paise: number | null
+  leakage_findings: number | null
+  success_rate: number | null
+  runs_24h: number
+  agents: { agent: string; runs: number; ok: number; errors: number }[]
+  daemon: DaemonPass | null
+  daemon_running: boolean
+  daemon_interval_seconds: number
+  activity: OpsEvent[]
+}
 export interface ChatMessage {
   ts: string
   via: 'text' | 'voice' | 'image' | null

@@ -1804,3 +1804,62 @@ code {
   color: var(--ink-2);
   border-color: transparent;
 }
+
+/* ------------------------------------------------------------------ operations */
+.ledger.four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+  margin-right: 4px;
+  vertical-align: 1px;
+}
+.live-dot.on {
+  background: var(--good, #1f9d55);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--good, #1f9d55) 25%, transparent);
+}
+.ops-feed {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ops-feed li {
+  display: grid;
+  grid-template-columns: 74px 170px minmax(0, 1fr);
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 14px;
+  animation: rise 0.2s var(--ease);
+}
+.ops-feed .when {
+  color: var(--muted);
+  font-size: 12.5px;
+  padding-top: 1px;
+}
+.ops-feed .agent {
+  font-weight: 600;
+  font-size: 13px;
+}
+.ops-feed .what {
+  overflow-wrap: anywhere;
+}
+.ops-feed li.bad .agent,
+.ops-feed li.bad .what {
+  color: var(--check);
+}
+@media (max-width: 760px) {
+  .ledger.four {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ops-feed li {
+    grid-template-columns: 60px minmax(0, 1fr);
+  }
+  .ops-feed .what {
+    grid-column: 1 / -1;
+  }
+}
