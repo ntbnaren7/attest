@@ -229,7 +229,10 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
                                         (case_id, op.merchant_id)),
                 "outbox": ctx.db.all("SELECT * FROM outbox WHERE account_id=? AND merchant_id=? ORDER BY created_at DESC",
                                      (case_id, op.merchant_id)),
-                "trace": _trace(op.merchant_id, account_id=case_id)}
+                "trace": _trace(op.merchant_id, account_id=case_id),
+                # batch id -> file name, so each claim can show which list it came from
+                "batch_files": {b["id"]: b["filename"] for b in ctx.db.all(
+                    "SELECT id, filename FROM batches WHERE merchant_id=?", (op.merchant_id,))}}
 
     def _trace(merchant_id, account_id=None, conversation_id=None, limit=200):
         sql, p = "SELECT * FROM trace WHERE merchant_id=?", [merchant_id]
