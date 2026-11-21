@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from fastapi.concurrency import run_in_threadpool
 from fastapi.staticfiles import StaticFiles
 
-from . import approvals, auth, coordinator, importer, inbox, live, recon, webhooks
+from . import approvals, auth, coordinator, daemon, importer, inbox, live, recon, webhooks
 from .config import ROOT, settings as default_settings
 from .context import Ctx
 from .db import now as dbnow
@@ -64,6 +64,8 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
         def _start():
             app.state.reconciler = Reconciler(ctx)
             app.state.reconciler.start()
+            app.state.daemon = daemon.RecoveryDaemon(ctx, ctx.settings.daemon_interval_seconds)
+            app.state.daemon.start()
 
     def operator(request: Request) -> auth.Operator:
         op = auth.operator_for_token(ctx.db, request.cookies.get(COOKIE))
@@ -118,6 +120,20 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
         facts = inbox.facts_for(ctx, op.merchant_id, account_id)
         facts.pop("_allowed_paise", None)
         return {"facts": facts, "messages": inbox.history(ctx, op.merchant_id, account_id, limit=50)}
+
+    # ---------------------------------------------------------------- 24/7 recovery daemon
+    @app.get("/api/daemon")
+    def daemon_status(op: auth.Operator = Depends(operator)):
+        sec.limit("read", f"daemon:{op.id}")
+        t = getattr(app.state, "daemon", None)
+        return {"running": bool(t and t.is_alive()), "interval_seconds": ctx.settings.daemon_interval_seconds,
+                "last": daemon.LAST.get(op.merchant_id)}
+
+    @app.post("/api/daemon/run")
+    async def daemon_run(op: auth.Operator = Depends(operator)):
+        """Run one daemon pass now (it also runs on its own every interval)."""
+        sec.limit("provider", op.id)
+        return await run_in_threadpool(daemon.tick, ctx, op.merchant_id)
 
     # ---------------------------------------------------------------- reconciliation (teammate engine, recon/)
     @app.get("/api/recon/status")

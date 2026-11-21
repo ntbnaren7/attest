@@ -62,6 +62,7 @@ class Settings:
     # Queue policy
     stale_minutes: int = field(default_factory=lambda: int(_env("STALE_MINUTES", "30")))
     reconcile_interval_seconds: int = field(default_factory=lambda: int(_env("RECONCILE_INTERVAL_SECONDS", "10")))
+    daemon_interval_seconds: int = field(default_factory=lambda: int(_env("DAEMON_INTERVAL_SECONDS", "60")))
     approval_ttl_seconds: int = field(default_factory=lambda: int(_env("APPROVAL_TTL_SECONDS", "600")))
     call_window_start_hour: int = 8   # RBI recovery norms: 8 AM to 7 PM, borrower local time
     call_window_end_hour: int = 19
