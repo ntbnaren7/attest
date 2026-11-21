@@ -38,10 +38,29 @@ The dashboard groups people into **Call now · Wait · Check first · Done**. Ea
 and the whole interface switches between English, हिंदी and தமிழ். A **Hear why** button reads a case's reason aloud
 through Sarvam TTS. It has light and dark modes.
 
+## Security and abuse protection
+
+All of this lives in `app/security.py` and `app/approvals.py`, with tests in `tests/test_security.py`.
+
+| Risk | Protection |
+|---|---|
+| Spamming paid AI calls (Sarvam chat, speech-to-text, text-to-speech) | Per-operator rate limits; one assistant request in flight per operator; a daily call budget per tenant (`SARVAM_DAILY_CALL_BUDGET`); 500-character / 1.5 MB caps per turn; spoken audio cached so replays cost nothing |
+| Spamming Cashfree or money actions | Per-operator limits on link requests, approvals, executions and provider re-checks; one link per approval (idempotency keys) |
+| Password guessing | Per-IP login rate limit and lockout of a username after 5 failures for 15 minutes |
+| Cross-site requests | `SameSite=strict` session cookie (`Secure` over HTTPS); state-changing API calls from other origins are refused; approvals need the approval-screen header |
+| Forged or replayed payment webhooks | HMAC signature on raw bytes, replay window, deduplication, per-IP limit, 64 KB body cap; payload never trusted, provider re-read instead |
+| Voice or model authorizing money | Not possible: approval is only accepted from an authenticated on-screen request bound to case, amount, version and recipient |
+| Prompt injection via notes or speech | Notes and speech only ever become claims; the model has no tool that changes balances or approves |
+| Free-text abuse of text-to-speech | Spoken help only reads fixed, server-side texts (`app/help_texts.py`) |
+| Browser attacks | Content-Security-Policy, `X-Frame-Options: DENY`, `nosniff`, strict referrer policy, microphone limited to this site, `no-store` on API responses, escaped HTML |
+| Information exposure | API docs and schema off unless `ENABLE_API_DOCS=1`; every query scoped to the operator's tenant; secrets only in `.env` (git-ignored) |
+
+Limits are adjustable with `RL_*_PER_MIN` environment variables. A limited request gets HTTP 429 with `Retry-After`, and the dashboard shows the message in the operator's language.
+
 ## Checks
 
 ```bash
-.venv/bin/pytest -q                                  # 47 tests: units, full workflow and dashboard endpoints
+.venv/bin/pytest -q                                  # 59 tests: units, workflow, dashboard endpoints and security
 .venv/bin/python scripts/demo_e2e.py                 # end-to-end run against the running server, writes evidence/e2e_*.json
 .venv/bin/python scripts/smoke_live.py               # live Cashfree / Sarvam / Relay smoke, writes evidence/smoke_*.json
 .venv/bin/python scripts/evaluate_ranking.py FILE.csv --outcome-col paid_within_7d --k 60   # ours vs file order
