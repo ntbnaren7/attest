@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import os
+from collections import OrderedDict
 
 import httpx
 
@@ -26,6 +27,7 @@ class SarvamLive:
         self.chat_model, self.stt_model, self.tts_model, self.speaker = chat_model, stt_model, tts_model, speaker
         self._key = api_key
         self._client = httpx.Client(timeout=60)
+        self._tts_cache: OrderedDict[tuple[str, str], dict] = OrderedDict()
 
     def _headers(self, json_ct=True):
         h = {"api-subscription-key": self._key, "Authorization": f"Bearer {self._key}"}
@@ -57,7 +59,23 @@ class SarvamLive:
         msg = (j.get("choices") or [{}])[0].get("message") or {}
         return {"message": msg, "model": j.get("model"), "id": j.get("id"), "usage": j.get("usage")}
 
+    def tts_cached(self, text: str, language_code: str) -> bool:
+        return (text[:2500], language_code) in self._tts_cache
+
     def tts(self, text: str, language_code: str) -> dict:
+        key = (text[:2500], language_code)
+        hit = self._tts_cache.get(key)
+        if hit:
+            self._tts_cache.move_to_end(key)
+            return {**hit, "cached": True}
+        out = self._tts_uncached(text, language_code)
+        if out.get("audio_b64"):
+            self._tts_cache[key] = out
+            while len(self._tts_cache) > 300:  # bounded memory; most-recent kept
+                self._tts_cache.popitem(last=False)
+        return out
+
+    def _tts_uncached(self, text: str, language_code: str) -> dict:
         body = {"text": text[:2500], "language_code": language_code, "model": self.tts_model, "speaker": self.speaker}
         r = self._client.post(f"{self.base}/text-to-speech", headers=self._headers(), json=body)
         if r.status_code >= 400:
