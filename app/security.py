@@ -53,6 +53,7 @@ LIMITS: dict[str, Limit] = {
 MAX_BODY = {
     "/api/import": 5_000_000,
     "/api/coordinator/voice": 1_500_000,   # ~30 s of compressed speech
+    "/api/inbox/message": 1_600_000,       # customer voice note plus form fields
     "/webhooks/": 64_000,
 }
 DEFAULT_MAX_BODY = 32_000

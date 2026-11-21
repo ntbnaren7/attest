@@ -66,3 +66,8 @@ def test_scorer_rejects_non_allowlisted_features():
     with pytest.raises(AssertionError):
         score({"days_past_due": 3, "pincode": 600001}, 100, None, False, date(2026, 11, 21))
     assert set(SCORING_FEATURES).isdisjoint({"gender", "religion", "caste", "pincode", "language", "name", "area"})
+
+
+def test_devanagari_payment_phrasing_is_a_paid_claim():
+    for t in ("मैंने पेमेंट कर दिया है", "पैसे भेज दिए हैं", "भुगतान हो गया"):
+        assert extract(t, date(2026, 11, 21)).paid_claim, t

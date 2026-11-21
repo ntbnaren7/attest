@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from fastapi.concurrency import run_in_threadpool
 from fastapi.staticfiles import StaticFiles
 
-from . import approvals, auth, coordinator, importer, live, recon, webhooks
+from . import approvals, auth, coordinator, importer, inbox, live, recon, webhooks
 from .config import ROOT, settings as default_settings
 from .context import Ctx
 from .db import now as dbnow
@@ -76,6 +76,32 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
         return approvals.APPROVAL_CHANNEL if request.headers.get("x-approval-screen") == "1" else "unknown"
 
     live.register(app, ctx, sec, operator)
+
+    # ---------------------------------------------------------------- customer messages (teammate voice layer, voice/)
+    @app.post("/api/inbox/message")
+    async def inbox_message(phone: str = Form(""), text: str = Form(""), language: str = Form(""),
+                            account_id: str = Form(""), audio: UploadFile | None = File(None),
+                            op: auth.Operator = Depends(operator)):
+        """A customer's WhatsApp-style message (simulated inbound until a WhatsApp number is connected)."""
+        data = await audio.read() if audio else None
+        if not data and not text.strip():
+            raise HTTPException(400, "Send text or a voice note.")
+        if data and len(data) > 1_500_000:
+            raise HTTPException(413, "Voice note too long. Keep it under 30 seconds.")
+        if len(text) > MAX_UTTERANCE_CHARS:
+            raise HTTPException(413, f"Please keep it under {MAX_UTTERANCE_CHARS} characters.")
+        sec.limit("assistant", op.id)
+        sec.budget.charge(op.merchant_id, 3 if data else 1)
+        sec.inflight.acquire(op.id)
+        try:
+            return await run_in_threadpool(
+                inbox.process, ctx, op, phone=phone or None, text=text or None, audio=data,
+                filename=(audio.filename if audio else None) or "voice_note.ogg",
+                language=language if language in coordinator.LANGS else None, account_id=account_id or None)
+        except RuntimeError as e:
+            raise HTTPException(503, str(e))
+        finally:
+            sec.inflight.release(op.id)
 
     # ---------------------------------------------------------------- reconciliation (teammate engine, recon/)
     @app.get("/api/recon/status")
