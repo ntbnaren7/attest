@@ -80,6 +80,7 @@ def process(ctx: Ctx, raw: bytes, headers: dict) -> tuple[int, dict]:
                   link_id=link["link_id"])
     allocate_receipts(ctx, link["merchant_id"], link["account_id"])
     q = build_queue(ctx, link["merchant_id"])
-    outcome = f"refreshed: {res.summary}"
+    outcome = (f"{why}; content-type={h.get('content-type', '?')}; version={h.get('x-webhook-version', '?')}; "
+               f"attempt={h.get('x-webhook-attempt', '?')}; refreshed: {res.summary}")
     db.x("UPDATE webhook_events SET outcome=? WHERE dedupe_key=?", (outcome, dedupe))
     return 200, {"status": "processed", "refresh": res.as_dict(), "queue_changes": q["changes"]}

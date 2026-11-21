@@ -56,9 +56,14 @@ def verify_webhook_signature(raw_body: bytes, timestamp: str | None, signature: 
                              tolerance_seconds: int, at: datetime | None = None) -> tuple[bool, str]:
     if not timestamp or not signature:
         return False, "missing signature headers"
-    expected = base64.b64encode(
-        hmac.new(secret.encode(), timestamp.encode() + raw_body, hashlib.sha256).digest()).decode()
-    if not hmac.compare_digest(expected, signature.strip()):
+    # Code samples sign timestamp+body; the docs' pseudo-code shows timestamp.body. Accept either, report which.
+    variant = None
+    for name, msg in (("concat", timestamp.encode() + raw_body), ("dot", timestamp.encode() + b"." + raw_body)):
+        expected = base64.b64encode(hmac.new(secret.encode(), msg, hashlib.sha256).digest()).decode()
+        if hmac.compare_digest(expected, signature.strip()):
+            variant = name
+            break
+    if not variant:
         return False, "signature mismatch"
     try:
         ts = int(timestamp)
@@ -68,7 +73,7 @@ def verify_webhook_signature(raw_body: bytes, timestamp: str | None, signature: 
     at = at or now()
     if abs(at.timestamp() - ts_s) > tolerance_seconds:
         return False, "timestamp outside replay window"
-    return True, "ok"
+    return True, f"ok (signature form: {variant})"
 
 
 def sign_webhook(raw_body: bytes, timestamp: str, secret: str) -> str:
