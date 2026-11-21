@@ -5,6 +5,7 @@ import { errText } from '../errors'
 import { inr, time } from '../format'
 import { groupLabel } from '../i18n'
 import { usePrefs } from '../prefs'
+import { shrink } from '../image'
 import { Dot } from './Status'
 
 const CLAIM_LABEL: Record<string, string> = {
@@ -30,18 +31,6 @@ function Linked({ text }: { text: string }) {
 }
 
 type Local = ChatMessage & { pending?: boolean; audioUrl?: string; imageUrl?: string; replyAudio?: string | null }
-
-/** Shrink a phone photo to ≤1600px JPEG so it uploads fast and stays under the server cap. */
-async function shrink(file: File): Promise<Blob> {
-  if (file.type === 'application/pdf') return file
-  const bmp = await createImageBitmap(file)
-  const k = Math.min(1, 1600 / Math.max(bmp.width, bmp.height))
-  const c = document.createElement('canvas')
-  c.width = Math.round(bmp.width * k)
-  c.height = Math.round(bmp.height * k)
-  c.getContext('2d')!.drawImage(bmp, 0, 0, c.width, c.height)
-  return new Promise((res) => c.toBlob((b) => res(b ?? file), 'image/jpeg', 0.85))
-}
 
 /** The customer's side of the conversation, simulated in the dashboard (replaces WhatsApp). */
 export function CustomerChat({ q, onChanged }: { q: Queue | null; onChanged: () => void }) {

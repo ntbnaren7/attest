@@ -13,7 +13,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from fastapi.concurrency import run_in_threadpool
 from fastapi.staticfiles import StaticFiles
 
-from . import approvals, auth, coordinator, daemon, importer, inbox, live, ops, recon, webhooks
+from . import approvals, auth, coordinator, daemon, importer, inbox, ledger, live, ops, recon, webhooks
 from .config import ROOT, settings as default_settings
 from .context import Ctx
 from .db import now as dbnow
@@ -108,6 +108,25 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
                 filename=(audio.filename if audio else None) or "voice_note.ogg",
                 language=language if language in coordinator.LANGS else None, account_id=account_id or None,
                 image=img, image_name=(image.filename if image else None) or "photo.jpg")
+        except RuntimeError as e:
+            raise HTTPException(503, str(e))
+        finally:
+            sec.inflight.release(op.id)
+
+    @app.post("/api/ledger/scan")
+    async def ledger_scan(image: UploadFile = File(...), language: str = Form("en-IN"), op: auth.Operator = Depends(operator)):
+        """A photo of a ledger / collection-diary page: OCR, match each line to an account, record what it says."""
+        img = await image.read()
+        if len(img) > 1_500_000:
+            raise HTTPException(413, "Photo too large. Send one under 1.5 MB.")
+        if not (image.content_type or "").startswith(("image/", "application/pdf")):
+            raise HTTPException(415, "Send a photo (JPG or PNG) or a PDF.")
+        sec.limit("assistant", op.id)
+        sec.budget.charge(op.merchant_id, 10)
+        sec.inflight.acquire(op.id)
+        try:
+            return await run_in_threadpool(ledger.scan, ctx, op, img, image.filename or "ledger.jpg",
+                                           language if language in coordinator.LANGS else "en-IN")
         except RuntimeError as e:
             raise HTTPException(503, str(e))
         finally:

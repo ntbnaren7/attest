@@ -20,7 +20,7 @@ from .config import ROOT
 from .context import Ctx
 from .db import IST, now
 from .indic_numbers import corrected_amount
-from .money import format_inr
+from .money import format_inr, parse_rupees_to_paise
 from .signals import extract
 from .specialists import evaluate, handoff
 
@@ -38,6 +38,7 @@ REPLIES = {
     "en-IN": {
         "relief": "I can't approve a waiver or refund here, but a person from our team will review your request and get back to you. Your current amount due is {due}.",
         "paid": "Thank you. We will check your payment with Cashfree and will not send reminders while we check.",
+        "photo_paid": "Thanks {name}, we have your receipt{ref}. Cashfree does not show this payment yet, so reminders are paused while our team checks it. You do not need to send it again.",
         "promise": "Thank you, we have noted that you will pay{amt} by {date}.",
         "deduction": "Thank you. A person from our team will review the deduction you mentioned before anything else.",
         "hardship": "We are sorry to hear that. Someone from our team will contact you about options. No reminders until then.",
@@ -47,6 +48,7 @@ REPLIES = {
     "hi-IN": {
         "relief": "मैं यहाँ छूट या रिफंड मंज़ूर नहीं कर सकता, लेकिन हमारी टीम का एक व्यक्ति आपका अनुरोध देखकर आपसे संपर्क करेगा। आपकी अभी की बकाया राशि {due} है।",
         "paid": "धन्यवाद। हम Cashfree से आपका भुगतान जाँचेंगे और जाँच तक कोई रिमाइंडर नहीं भेजेंगे।",
+        "photo_paid": "धन्यवाद {name}, आपकी रसीद मिल गई{ref}। Cashfree में यह भुगतान अभी नहीं दिख रहा, इसलिए जाँच पूरी होने तक रिमाइंडर रोक दिए गए हैं। इसे दोबारा भेजने की ज़रूरत नहीं है।",
         "promise": "धन्यवाद, हमने नोट कर लिया है कि आप {date} तक{amt} भुगतान करेंगे।",
         "deduction": "धन्यवाद। आपकी बताई कटौती को हमारी टीम का एक व्यक्ति पहले देखेगा।",
         "hardship": "यह सुनकर दुख हुआ। हमारी टीम का कोई व्यक्ति विकल्पों के लिए आपसे संपर्क करेगा। तब तक कोई रिमाइंडर नहीं।",
@@ -56,6 +58,7 @@ REPLIES = {
     "ta-IN": {
         "relief": "தள்ளுபடி அல்லது திருப்பித் தருதலை இங்கே என்னால் அனுமதிக்க முடியாது; எங்கள் குழுவினர் ஒருவர் உங்கள் கோரிக்கையைப் பார்த்து உங்களைத் தொடர்பு கொள்வார். உங்கள் தற்போதைய நிலுவை {due}.",
         "paid": "நன்றி. உங்கள் கட்டணத்தை Cashfree-இல் சரிபார்ப்போம்; சரிபார்க்கும் வரை நினைவூட்டல் அனுப்ப மாட்டோம்.",
+        "photo_paid": "நன்றி {name}, உங்கள் ரசீது கிடைத்தது{ref}. Cashfree-இல் இந்தக் கட்டணம் இன்னும் தெரியவில்லை; சரிபார்க்கும் வரை நினைவூட்டல்கள் நிறுத்தப்பட்டுள்ளன. மீண்டும் அனுப்பத் தேவையில்லை.",
         "promise": "நன்றி, நீங்கள் {date} க்குள்{amt} செலுத்துவீர்கள் என்று பதிவு செய்துள்ளோம்.",
         "deduction": "நன்றி. நீங்கள் குறிப்பிட்ட கழிவை எங்கள் குழுவினர் ஒருவர் முதலில் பார்ப்பார்.",
         "hardship": "இதைக் கேட்டு வருந்துகிறோம். மாற்று வழிகளுக்காக எங்கள் குழுவினர் உங்களைத் தொடர்பு கொள்வார். அதுவரை நினைவூட்டல் இல்லை.",
@@ -65,6 +68,7 @@ REPLIES = {
     "kn-IN": {
         "relief": "ಇಲ್ಲಿ ಮನ್ನಾ ಅಥವಾ ಮರುಪಾವತಿಯನ್ನು ನಾನು ಅನುಮೋದಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ; ನಮ್ಮ ತಂಡದವರು ನಿಮ್ಮ ವಿನಂತಿಯನ್ನು ಪರಿಶೀಲಿಸಿ ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸುತ್ತಾರೆ. ನಿಮ್ಮ ಈಗಿನ ಬಾಕಿ {due}.",
         "paid": "ಧನ್ಯವಾದ. ನಿಮ್ಮ ಪಾವತಿಯನ್ನು Cashfree ನಲ್ಲಿ ಪರಿಶೀಲಿಸುತ್ತೇವೆ; ಪರಿಶೀಲನೆ ಮುಗಿಯುವವರೆಗೆ ನೆನಪೋಲೆ ಕಳುಹಿಸುವುದಿಲ್ಲ.",
+        "photo_paid": "ಧನ್ಯವಾದ {name}, ನಿಮ್ಮ ರಸೀದಿ ಸಿಕ್ಕಿದೆ{ref}. Cashfree ನಲ್ಲಿ ಈ ಪಾವತಿ ಇನ್ನೂ ಕಾಣುತ್ತಿಲ್ಲ; ಪರಿಶೀಲನೆ ಮುಗಿಯುವವರೆಗೆ ನೆನಪೋಲೆಗಳನ್ನು ನಿಲ್ಲಿಸಲಾಗಿದೆ. ಮತ್ತೆ ಕಳುಹಿಸುವ ಅಗತ್ಯವಿಲ್ಲ.",
         "promise": "ಧನ್ಯವಾದ, ನೀವು {date} ರೊಳಗೆ{amt} ಪಾವತಿಸುತ್ತೀರಿ ಎಂದು ದಾಖಲಿಸಿದ್ದೇವೆ.",
         "deduction": "ಧನ್ಯವಾದ. ನೀವು ಹೇಳಿದ ಕಡಿತವನ್ನು ನಮ್ಮ ತಂಡದ ಒಬ್ಬರು ಮೊದಲು ಪರಿಶೀಲಿಸುತ್ತಾರೆ.",
         "hardship": "ಇದನ್ನು ಕೇಳಿ ಬೇಸರವಾಯಿತು. ಆಯ್ಕೆಗಳ ಬಗ್ಗೆ ನಮ್ಮ ತಂಡದವರು ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸುತ್ತಾರೆ. ಅಲ್ಲಿಯವರೆಗೆ ನೆನಪೋಲೆ ಇಲ್ಲ.",
@@ -290,8 +294,17 @@ def process(ctx: Ctx, op, *, phone: str | None, text: str | None = None, audio: 
     actor = f"customer:{_digits(phone) or 'unknown'}"
     today = now().astimezone(IST).date()
     sig = extract(transcript, today)
+    if ocr is not None and not sig.reference:  # receipts put the id on its own line, under a label
+        long_id = re.search(r"\b\d{10,22}\b", transcript)
+        sig.reference = entities.get("transaction_id") or (long_id.group(0) if long_id else None)
     if ocr is not None and not sig.paid_claim and sig.reference and RECEIPT_WORDS.search(transcript):
         sig.paid_claim = True  # a photo of a payment receipt with a reference counts as "I paid" (still only a claim)
+    if ocr is not None:  # on a receipt, the paid amount is the first ₹/Rs figure, never a long transaction id
+        m = MONEY.search(transcript)
+        try:
+            sig.paid_amount_paise = parse_rupees_to_paise(m.group(1) or m.group(2)) if m else None
+        except Exception:
+            sig.paid_amount_paise = None
     amt, _ = corrected_amount(transcript)
     if amt is None and entities.get("amount"):
         amt = round(float(entities["amount"]) * 100)
@@ -341,6 +354,12 @@ def process(ctx: Ctx, op, *, phone: str | None, text: str | None = None, audio: 
                 out["reply_audio_b64"] = ctx.sarvam.tts(reply, lang)["audio_b64"]
             except Exception:
                 pass
+    # A receipt photo that Cashfree cannot confirm yet: a fixed, clear answer (models tend to ask for the receipt again).
+    if ocr is not None and "paid" in kinds and d.code in ("PAID_CLAIM_UNVERIFIED", "PAID_CLAIM_CHECKING", "EVIDENCE_CONFLICT"):
+        out.update(reply=REPLIES[lang]["photo_paid"].format(name=acct["display_name"] or "",
+                                                           ref=f" (ref {reference})" if reference else ""),
+                   reply_source="template")
+        out.pop("reply_audio_b64", None)
     ctx.db.trace(op.merchant_id, "customer_message", actor, account_id=acct["id"],
                  input={"via": "image" if ocr is not None else "voice" if audio else "text", "transcript": transcript},
                  result={"claims": out["claims"], "decision": d.code, "reply_source": out["reply_source"],

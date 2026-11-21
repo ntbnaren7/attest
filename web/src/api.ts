@@ -213,6 +213,12 @@ export const api = {
     return call<ChatResult>('/api/inbox/message', { method: 'POST', body: fd })
   },
   ops: () => call<OpsSummary>('/api/ops'),
+  ledgerScan: (image: Blob, lang: string) => {
+    const fd = new FormData()
+    fd.append('image', image, 'ledger.jpg')
+    fd.append('language', lang)
+    return call<LedgerResult>('/api/ledger/scan', { method: 'POST', body: fd })
+  },
   daemonRun: () => call<DaemonPass>('/api/daemon/run', { method: 'POST' }),
   help: (topic: string, lang: Lang) => call<{ text: string; audio_b64: string | null }>(`/api/help/${encodeURIComponent(topic)}?lang=${lang}`),
 }
@@ -277,6 +283,13 @@ export interface ReconView {
   kpi: { findings: number; critical: number; high: number; at_risk: number; approvals: number }
 }
 
+export interface LedgerResult {
+  ocr_text: string
+  review_required: boolean
+  matched: number
+  lines: { line: string; account: { id: string; external_ref: string; display_name: string } | null; reply?: string;
+    decision?: string; code?: string }[]
+}
 export interface OpsEvent {
   id: number
   ts: string

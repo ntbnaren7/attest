@@ -34,6 +34,8 @@ def agent_of(r: dict) -> str:
         return "Priority engine"
     if k == "import":
         return "Importer"
+    if k == "ledger_scan":
+        return "OCR (ledger)"
     return "Guard" if k == "denial" else k
 
 
@@ -62,6 +64,8 @@ def text_of(r: dict, res: dict, inp: dict) -> str:
     if k == "agent_run":
         return (f"{res.get('findings')} findings, {format_inr(round((res.get('at_risk') or 0) * 100))} at stake ({res.get('mode')})"
                 if res.get("ok") else f"failed: {res.get('error')}")
+    if k == "ledger_scan":
+        return f"Ledger page read: {res.get('lines')} lines, {res.get('matched')} matched to accounts"
     if k == "utterance":
         return f"Operator said: “{(inp.get('text') or '')[:70]}”"
     if k == "extraction":

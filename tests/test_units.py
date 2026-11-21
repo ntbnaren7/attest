@@ -71,3 +71,9 @@ def test_scorer_rejects_non_allowlisted_features():
 def test_devanagari_payment_phrasing_is_a_paid_claim():
     for t in ("मैंने पेमेंट कर दिया है", "पैसे भेज दिए हैं", "भुगतान हो गया"):
         assert extract(t, date(2026, 11, 21)).paid_claim, t
+
+
+def test_feminine_hindi_promise_forms():
+    for t in ("salary 5th ko aayega tab de dungi", "कल दे दूँगी"):
+        assert extract(t, date(2026, 11, 21)).promise, t
+    assert extract("मैं नहीं दूँगी", date(2026, 11, 21)).negated_paid or not extract("मैं नहीं दूँगी", date(2026, 11, 21)).paid_claim

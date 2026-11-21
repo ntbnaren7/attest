@@ -111,3 +111,15 @@ def test_non_image_upload_is_refused(meena, fake):
     acct = row(meena, "L-1003")["account_id"]
     r = meena.post("/api/inbox/message", data={"account_id": acct}, files={"image": ("x.exe", b"MZ", "application/x-msdownload")})
     assert r.status_code == 415
+
+
+def test_receipt_amount_is_the_rupee_figure_not_the_utr(meena, fake, monkeypatch):
+    upload(meena, "borrower_batch_A.csv")
+    acct = row(meena, "L-1003")["account_id"]
+    fake("ok", lang="en-IN", entities={"transaction_id": "533891274405"})   # the live voice layer extracts it
+    monkeypatch.setattr(inbox, "read_image", lambda ctx, d, n: {
+        "extracted_text": "Payment Successful\n₹5,000\nUPI Transaction ID\n533891274405", "errors": []})
+    out = meena.post("/api/inbox/message", data={"account_id": acct},
+                     files={"image": ("s.png", b"\x89PNG", "image/png")}).json()
+    assert "5,33" not in row(meena, "L-1003")["reason"] and "₹5,000" in row(meena, "L-1003")["reason"]
+    assert "do not need to send it again" in out["reply"]

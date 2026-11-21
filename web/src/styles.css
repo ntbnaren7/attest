@@ -1891,3 +1891,39 @@ code {
   font-size: 13.5px;
   line-height: 1.5;
 }
+
+/* ------------------------------------------------------------------ ledger scan */
+.dialog.wide {
+  width: min(860px, calc(100vw - 32px));
+}
+.ledger-res {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 20px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.ledger-img {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--rule);
+}
+.ledger-lines {
+  list-style: none;
+  margin: 12px 0;
+  padding: 0;
+}
+.ledger-lines li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule);
+  display: grid;
+  gap: 3px;
+}
+.ledger-lines .who {
+  font-weight: 600;
+}
+@media (max-width: 760px) {
+  .ledger-res {
+    grid-template-columns: 1fr;
+  }
+}

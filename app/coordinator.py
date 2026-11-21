@@ -24,6 +24,8 @@ from .specialists import HandoffDenied, evaluate, handoff
 
 INTENTS = ["status_query", "paid_claim", "promise_to_pay", "deduction_claim", "hardship", "opt_out",
            "request_payment_link", "approve_or_execute", "list_queue", "books_query", "unclear"]
+QUESTION = re.compile(r"\?|\b(kab|kya|kitna|kitne|kaun|when|what|how much|did|does|is there)\b|क्या|कब|कितना|எப்போது|என்ன|ಯಾವಾಗ|ಏನು",
+                      re.IGNORECASE)
 # Questions about the merchant's books (settlements, fees, leakage) go to the reconciliation engine (recon/).
 BOOKS_WORDS = re.compile(r"settle|reconcil|leak|mdr|fee|charges|discrepan|mismatch|duplicate|refund|tie.?out|bank statement|"
                          r"सेटलमेंट|मिलान|शुल्क|फीस|लीकेज|गड़बड़|செட்டில்|கட்டணம்|சமரச|ಸೆಟಲ್|ಶುಲ್ಕ|ಹೊಂದಾಣಿಕೆ", re.IGNORECASE)
@@ -359,14 +361,15 @@ def resolve_account(ctx: Ctx, merchant_id: str, spoken: str, text: str) -> tuple
 
 
 def process(ctx: Ctx, operator, text: str, *, language_hint: str | None = None, conversation_id: str | None = None,
-            via: str = "voice", stt: dict | None = None, account_hint: str | None = None) -> dict:
+            via: str = "voice", stt: dict | None = None, account_hint: str | None = None, speak: bool = True,
+            reply_language: str | None = None) -> dict:
     db = ctx.db
     m_id = operator.merchant_id
     conv = conversation_id or new_id("conv")
     actor = f"coordinator(for {operator.username})"
     lang = detect_language(text, language_hint)
     turn = {"conversation_id": conv, "transcript": text, "language": lang, "via": via, "stt": stt, "handoffs": [],
-            "denials": [], "reply": "", "decision": None, "account": None}
+            "denials": [], "reply": "", "decision": None, "account": None, "_quiet": not speak}
     db.trace(m_id, "utterance", f"operator:{operator.username}", conversation_id=conv,
              input={"text": text, "via": via, "language": lang, "stt": stt})
 
@@ -381,12 +384,20 @@ def process(ctx: Ctx, operator, text: str, *, language_hint: str | None = None, 
             ex.intent = "approve_or_execute"   # backend guard wins over model classification
         if not ex.account_ref and rb.account_ref:
             ex.account_ref = rb.account_ref
+        # A question about a claim ("by when did she promise?") is a lookup, not a new claim.
+        if ex.intent in ("paid_claim", "promise_to_pay", "deduction_claim", "hardship", "opt_out") and \
+                rb.intent != ex.intent and QUESTION.search(text):
+            ex.intent = "status_query"
+        if not ex.promised_date and rb.promised_date:
+            ex.promised_date = rb.promised_date   # e.g. "salary 25th": the rules resolve the date, the model may not
         if ex.amount_paise is not None and rb.amount_paise is not None and ex.amount_paise != rb.amount_paise:
             ex.clarification_question = ex.clarification_question or "amount"
             ex.amount_candidates = sorted({ex.amount_paise, rb.amount_paise})
     # Script and Hinglish detection is deterministic; the model's label only fills in when we found plain English.
     if lang != "en-IN":
         ex.language = lang
+    if reply_language in LANGS:
+        ex.language = reply_language   # e.g. ledger lines: answer in the operator's language, not the line's
     turn["extraction"] = {k: v for k, v in ex.__dict__.items() if k != "model_call"}
     turn["model_call"] = ex.model_call or None
     db.trace(m_id, "extraction", ex.source, conversation_id=conv,
@@ -457,7 +468,7 @@ def process(ctx: Ctx, operator, text: str, *, language_hint: str | None = None, 
         promised = ex.promised_date
         if kind == "promise" and not promised:
             promised = (now().astimezone(IST).date() + timedelta(days=1)).isoformat()
-        c = do(case_id, "reconciliation", "record_claim", kind=kind, source=f"voice:{operator.username}", text=text,
+        c = do(case_id, "reconciliation", "record_claim", kind=kind, source=f"{via}:{operator.username}", text=text,
                amount_paise=ex.amount_paise, reference=ex.reference or None, promised_date=promised)
         what = CLAIM_WORDS[L][kind] + (f" {format_inr(ex.amount_paise)}" if ex.amount_paise else "") + \
             (f", ref {ex.reference}" if ex.reference else "")
@@ -523,7 +534,7 @@ def books_answer(ctx: Ctx, merchant_id: str, lang: str, conv: str | None = None)
 
 def _finish(ctx: Ctx, turn: dict, lang: str) -> dict:
     turn["reply_language"] = lang
-    if ctx.sarvam and turn["reply"]:
+    if ctx.sarvam and turn["reply"] and not turn.pop("_quiet", False):
         try:
             tts = ctx.sarvam.tts(turn["reply"], lang)
             turn["reply_audio_b64"] = tts["audio_b64"]
