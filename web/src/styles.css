@@ -469,8 +469,7 @@ a.btn {
 .tab[aria-selected='true'] {
   color: var(--ink);
 }
-.tab[aria-selected='true']::after {
-  content: '';
+.tab .indicator {
   position: absolute;
   left: 0;
   right: 0;
@@ -478,6 +477,7 @@ a.btn {
   height: 2px;
   border-radius: 2px;
   background: var(--ink);
+  view-transition-name: tab-indicator; /* morphs from the old tab to the new one */
 }
 .tab .count {
   font-variant-numeric: tabular-nums;
@@ -1332,4 +1332,197 @@ details summary::-webkit-details-marker {
     padding-left: 20px;
     padding-right: 20px;
   }
+}
+
+/* ------------------------------------------------------------------ transitions
+   One vocabulary: 140-240ms, ease-out, opacity plus at most 6px of travel. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+  animation-timing-function: var(--ease);
+}
+::view-transition-group(tab-indicator) {
+  animation-duration: 240ms;
+  animation-timing-function: var(--ease);
+}
+.rows {
+  view-transition-name: rows;
+}
+::view-transition-old(rows) {
+  animation: 140ms var(--ease) both vt-out;
+}
+::view-transition-new(rows) {
+  animation: 220ms var(--ease) both vt-in;
+}
+@keyframes vt-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* rows rise in, lightly staggered, whenever the list is re-keyed (tab change, scenario switch) */
+.rows > li {
+  animation: row-in 260ms var(--ease) both;
+}
+.rows > li:nth-child(2) { animation-delay: 20ms; }
+.rows > li:nth-child(3) { animation-delay: 40ms; }
+.rows > li:nth-child(4) { animation-delay: 60ms; }
+.rows > li:nth-child(5) { animation-delay: 80ms; }
+.rows > li:nth-child(n + 6) { animation-delay: 100ms; }
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+/* exits mirror the entrances */
+.overlay.closing {
+  animation: fade-out 170ms var(--ease) forwards;
+}
+.drawer.closing {
+  animation: slide-out 170ms var(--ease) forwards;
+}
+.dialog.closing {
+  animation: sink 170ms var(--ease) forwards;
+}
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes slide-out {
+  to {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+}
+@keyframes sink {
+  to {
+    transform: translateY(6px) scale(0.985);
+    opacity: 0;
+  }
+}
+
+/* figures and amounts settle softly when values change */
+.figure,
+.row .amount,
+.figures b {
+  transition: color 0.3s var(--ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* ------------------------------------------------------------------ live test panel */
+.drawer.live {
+  width: min(600px, 100vw);
+}
+.btn.sm {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 13.5px;
+  border-radius: 8px;
+}
+.btn-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.steps-live {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-top: 1px solid var(--rule);
+}
+.steps-live li {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.step-mark {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  box-shadow: inset 0 0 0 1.5px var(--rule-strong);
+  transition: background 0.25s var(--ease), color 0.25s var(--ease);
+}
+.steps-live li.done .step-mark {
+  background: var(--call);
+  color: #fff;
+  box-shadow: none;
+}
+.step-title {
+  font-weight: 600;
+  margin: 1px 0 8px;
+}
+.steps-live li.done .step-title {
+  color: var(--muted);
+}
+.watch-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+.link-btn {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.pulse-dot {
+  animation: pulse 1.4s ease-in-out infinite;
+}
+code {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 12px;
+  background: var(--sunken);
+  padding: 1px 5px;
+  border-radius: 5px;
+  word-break: break-all;
+}
+.live-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 0;
+  background: var(--sunken);
+  font-size: 13px;
+  font-weight: 560;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.live-btn:hover {
+  background: var(--rule);
+}
+.live-btn .dot {
+  --s: var(--call);
 }
