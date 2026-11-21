@@ -50,6 +50,27 @@ Panels, tabs, scenario, language and theme changes use short View Transitions (c
 It is honoured only for requests made on this machine (`localhost`, no proxy headers); through a tunnel or any
 other host the normal sign-in is required. It has light and dark modes.
 
+## Workflow coverage
+
+How the team workflow (React dashboard + AI financial recovery system) maps onto this app:
+
+| Workflow step | Where it lives |
+|---|---|
+| Dashboard input: text, voice, image | **Customer chat** (type, hold the mic, or attach a photo) and the operator **Assistant** |
+| Input processing: Sarvam STT, OCR | `saaras:v4` speech-to-text; Sarvam Document AI OCR for receipts, slips and notes (`ocr/`, from corefour05-code/sarvam-priority-agent) |
+| LLM orchestrator | `app/coordinator.py`: `sarvam-105b` tool call classifies intent and routes to specialists; books questions go to the reconciliation engine |
+| Reconciliation + discrepancy agents | `recon/` (MSR-3117/SarvamxCashfree): books vs Cashfree vs bank, leakage, duplicates; **Reconciliation** view |
+| Priority/risk agent | `app/policy.py`: likelihood-to-pay score with reasons, allow-listed features only; shown in the case drawer |
+| Recovery agent | outreach specialist: payment links after on-screen approval, delivery by Relay email |
+| Customer query agent | `app/inbox.py`: replies grounded only in the account's verified facts, in the customer's language |
+| Backend + SQL source of truth | FastAPI + SQLite; auth, tenant scoping, rate limits, approvals enforced server-side |
+| Cashfree payment links + webhooks | Cashfree PG sandbox; signed, de-duplicated webhooks plus a reconciler that re-reads open links |
+| Response generation | text replies; spoken replies for voice notes (`bulbul:v3`); OCR text shown with the reply for photos |
+| 24/7 recovery daemon | `app/daemon.py`: ranks, picks the next eligible customers inside contact hours, writes a strategy, prepares a link **for approval**, schedules follow-ups |
+| Live operations dashboard | **Operations** view over server-sent events (`/api/events`): agent activity, success rates, recovered revenue, leakage, daemon status |
+
+The daemon never creates or sends a payment link on its own: a person approves each one on screen.
+
 ## Customer chat (instead of WhatsApp)
 
 WhatsApp is not used: the available Twilio account is a trial that only sends approved templates. Instead, the
@@ -102,7 +123,7 @@ Limits are adjustable with `RL_*_PER_MIN` environment variables. A limited reque
 ## Checks
 
 ```bash
-.venv/bin/pytest -q                                  # 77 tests: units, workflow, dashboard, security, reconciliation and customer chat
+.venv/bin/pytest -q                                  # 85 tests: units, workflow, dashboard, security, reconciliation, customer chat, OCR, daemon and live ops
 .venv/bin/python scripts/demo_e2e.py                 # end-to-end run against the running server, writes evidence/e2e_*.json
 .venv/bin/python scripts/smoke_live.py               # live Cashfree / Sarvam / Relay smoke, writes evidence/smoke_*.json
 .venv/bin/python scripts/evaluate_ranking.py FILE.csv --outcome-col paid_within_7d --k 60   # ours vs file order
