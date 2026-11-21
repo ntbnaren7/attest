@@ -66,6 +66,13 @@ Built for the **Sarvam × Cashfree Buildathon** (Problem 2: *Who will pay first?
 - **Operations:** live feed over server-sent events: every agent step, success rates, recovered revenue, leakage, daemon status.
 - **Top bar:** Loan book / Customer invoices, Sample data / Live run, language, theme.
 
+## Try OCR quickly
+
+Sample photos in `fixtures/` (synthetic):
+- `upi_screenshot.png`: a "Payment Successful" screenshot for ₹5,000 → **Customer chat → 📎** (Customer invoices). Held as "says paid, not verified".
+- `receipt.jpg`: a ₹1,500 UPI receipt → **Customer chat → 📎**.
+- `ledger_page.jpg`: a handwritten collection-diary page → **Collections → Scan ledger page** (Loan book). Updates five accounts.
+
 ## Run it
 
 ```bash
