@@ -168,14 +168,14 @@ export function Assistant({ voiceOn, focusId, onCase, onApprove, onChanged }: {
               {tu.via === 'voice' && <Mic size={12} />}
               {tu.transcript}
             </div>
-            <div className={`a ${tu.denials.length ? 'denied' : ''}`}>{tu.reply}</div>
-            {(tu.handoffs.length > 0 || tu.denials.length > 0) && (
+            <div className={`a ${tu.denials?.length ? 'denied' : ''}`}>{tu.reply}</div>
+            {((tu.handoffs?.length ?? 0) > 0 || (tu.denials?.length ?? 0) > 0) && (
               <details>
                 <summary>
-                  {t.whatIChecked} · {tu.extraction.source === 'sarvam_tool_call' ? 'Sarvam' : 'rules'}
+                  {t.whatIChecked} · {tu.extraction?.source === 'sarvam_tool_call' ? 'Sarvam' : 'rules'}
                 </summary>
                 <ul className="steps">
-                  {tu.handoffs.map((h, j) => (
+                  {(tu.handoffs ?? []).map((h, j) => (
                     <li key={j}>
                       <Check size={13} style={{ flex: 'none', marginTop: 3 }} />
                       <span>
@@ -184,7 +184,7 @@ export function Assistant({ voiceOn, focusId, onCase, onApprove, onChanged }: {
                       </span>
                     </li>
                   ))}
-                  {tu.denials.map((dn, j) => (
+                  {(tu.denials ?? []).map((dn, j) => (
                     <li key={`d${j}`} style={{ color: 'var(--check)' }}>
                       <Ban size={13} style={{ flex: 'none', marginTop: 3 }} />
                       <span>{dn.reason}</span>

@@ -30,3 +30,12 @@ def test_assistant_routes_books_questions_to_the_engine(meena):
     out = meena.post("/api/coordinator/text", json={"text": "Any settlement discrepancies or fee leakage this week?"}).json()
     assert out["extraction"]["intent"] == "books_query"
     assert "12 issues" in out["reply"] and "₹82,513.18" in out["reply"]
+
+
+def test_account_questions_are_not_books_questions(meena):
+    from conftest import upload
+    upload(meena, "borrower_batch_A.csv")
+    out = meena.post("/api/coordinator/text", json={"text": "Who is Vikram Singh?"}).json()
+    assert out["account"]["external_ref"] == "L-1004" and "L-1004" in out["reply"]
+    out = meena.post("/api/coordinator/text", json={"text": "What is L1001?"}).json()
+    assert out["account"]["external_ref"] == "L-1001" and "Reconciliation found" not in out["reply"]

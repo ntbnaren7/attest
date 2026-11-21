@@ -19,6 +19,7 @@ import { CustomerChat } from './components/CustomerChat'
 import { OpsView } from './components/OpsView'
 import { LedgerScan } from './components/LedgerScan'
 import { AddCustomer } from './components/AddCustomer'
+import { Guard } from './components/Guard'
 
 type Pending = { approval: Approval; name: string; reason: string }
 
@@ -144,6 +145,7 @@ export default function App() {
         }}
       />
       <main className="page fade" key={`${view}-${me.operator.username}`}>
+        <Guard label={view}>
         {view === 'ops' ? (
           <OpsView events={events} live={live} />
         ) : view === 'recon' ? (
@@ -176,18 +178,21 @@ export default function App() {
         <div className="main">
           <PeopleList q={q} filter={filter} setFilter={(f) => transition(() => setFilter(f))} flash={flash} onOpen={setOpen} />
           <aside className="side">
-            <Assistant
-              voiceOn={me.integrations.sarvam.mode === 'live'}
-              focusId={open}
-              onCase={setOpen}
-              onApprove={(a, name) => openApproval(a, name)}
-              onChanged={refresh}
-            />
+            <Guard label="assistant">
+              <Assistant
+                voiceOn={me.integrations.sarvam.mode === 'live'}
+                focusId={open}
+                onCase={setOpen}
+                onApprove={(a, name) => openApproval(a, name)}
+                onChanged={refresh}
+              />
+            </Guard>
             <ChangeFeed items={feed} onOpen={setOpen} />
           </aside>
         </div>
         </>
         )}
+        </Guard>
       </main>
 
       {liveOpen && (

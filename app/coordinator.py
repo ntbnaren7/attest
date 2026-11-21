@@ -27,7 +27,8 @@ INTENTS = ["status_query", "paid_claim", "promise_to_pay", "deduction_claim", "h
 QUESTION = re.compile(r"\?|\b(kab|kya|kitna|kitne|kaun|when|what|how much|did|does|is there)\b|क्या|कब|कितना|எப்போது|என்ன|ಯಾವಾಗ|ಏನು",
                       re.IGNORECASE)
 # Questions about the merchant's books (settlements, fees, leakage) go to the reconciliation engine (recon/).
-BOOKS_WORDS = re.compile(r"settle|reconcil|leak|mdr|fee|charges|discrepan|mismatch|duplicate|refund|tie.?out|bank statement|"
+BOOKS_WORDS = re.compile(r"settle|reconcil|leak|mdr|fee|charges|discrepan|mismatch|duplicate|refund|tie.?out|bank|gateway|payout|"
+                         r"stuck|books\b|ledger vs|"
                          r"सेटलमेंट|मिलान|शुल्क|फीस|लीकेज|गड़बड़|செட்டில்|கட்டணம்|சமரச|ಸೆಟಲ್|ಶುಲ್ಕ|ಹೊಂದಾಣಿಕೆ", re.IGNORECASE)
 
 TOOL = {
@@ -340,7 +341,7 @@ def model_extract(ctx: Ctx, text: str, lang: str, history: list[dict]) -> Extrac
 
 
 def resolve_account(ctx: Ctx, merchant_id: str, spoken: str, text: str) -> tuple[dict | None, list[str]]:
-    rows = ctx.db.all("SELECT id, external_ref FROM accounts WHERE merchant_id=?", (merchant_id,))
+    rows = ctx.db.all("SELECT id, external_ref, display_name FROM accounts WHERE merchant_id=?", (merchant_id,))
     norm = lambda s: re.sub(r"[^A-Za-z0-9]", "", s or "").upper()
     if spoken:
         exact = [r for r in rows if norm(r["external_ref"]) == norm(spoken)]
@@ -357,6 +358,17 @@ def resolve_account(ctx: Ctx, merchant_id: str, spoken: str, text: str) -> tuple
             return cands[0], []
         if len(cands) > 1:
             return None, [c["external_ref"] for c in cands[:5]]
+    # By name: the full name, else a first name that is unique in this book ("Who is Vikram Singh?")
+    low = text.lower()
+    full = [r for r in rows if r["display_name"] and r["display_name"].lower() in low]
+    if len(full) == 1:
+        return {"id": full[0]["id"], "external_ref": full[0]["external_ref"]}, []
+    first = [r for r in rows if r["display_name"] and len(r["display_name"].split()[0]) > 2
+             and re.search(rf"\b{re.escape(r['display_name'].split()[0].lower())}\b", low)]
+    if len(first) == 1:
+        return {"id": first[0]["id"], "external_ref": first[0]["external_ref"]}, []
+    if len(first) > 1:
+        return None, [r["external_ref"] for r in first[:5]]
     return None, []
 
 
@@ -433,6 +445,9 @@ def process(ctx: Ctx, operator, text: str, *, language_hint: str | None = None, 
               if top else t(L, "queue_empty"))
         return _finish(ctx, turn, L)
 
+    if ex.intent == "books_query" and (ex.account_ref or not BOOKS_WORDS.search(text)):
+        ex.intent = "status_query"       # a named account ("What is L1001?") is about that account, not the books
+        turn["extraction"]["intent"] = "status_query"
     if ex.intent == "books_query" or (ex.intent in ("status_query", "unclear") and not ex.account_ref and BOOKS_WORDS.search(text)):
         turn["extraction"]["intent"] = "books_query"
         reply(books_answer(ctx, m_id, L, conv))
@@ -457,8 +472,8 @@ def process(ctx: Ctx, operator, text: str, *, language_hint: str | None = None, 
                   else t(L, "clarify_account"))
         return _finish(ctx, turn, L)
     if ex.intent == "unclear":
-        reply(ex.clarification_question or t(L, "clarify_account"))
-        return _finish(ctx, turn, L)
+        ex.intent = "status_query"   # we know which account they mean: answer with its status
+        turn["extraction"]["intent"] = "status_query"
 
     case_id, ref = acct["id"], acct["external_ref"]
     turn["account"] = {"id": case_id, "external_ref": ref}
