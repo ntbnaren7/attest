@@ -886,3 +886,98 @@ select {
     animation: none;
   }
 }
+
+/* ---------- spoken help ---------- */
+.help {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+}
+.help-btn {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-2);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+}
+.help-btn:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.help-pop {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(320px, 80vw);
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 400;
+  text-align: left;
+  box-shadow: var(--shadow-lg);
+  white-space: normal;
+}
+.with-help {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.with-help > .btn,
+.with-help > .mic {
+  flex: 1;
+  margin-top: 0;
+}
+.examples {
+  margin-top: 12px;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.chip {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--ink-2);
+  text-align: left;
+}
+.chip:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.say-like {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px dashed var(--line-strong);
+  font-size: 14px;
+}
+.group-wrap {
+  position: relative;
+  display: flex;
+}
+.group-wrap > .group {
+  flex: 1;
+  padding-right: 48px;
+}
+.group-help {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
+}

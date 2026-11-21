@@ -121,6 +121,12 @@ const en = {
   messages: 'Messages',
   empty: 'No one here.',
   emptyStart: 'Add a list to begin.',
+  explainThis: 'Explain this out loud',
+  tryAsking: 'Try saying',
+  sayLike: 'Say something like',
+  tooMany: 'Too many requests. Please wait a few seconds.',
+  budgetOut: 'Voice help is used up for today. Typing still works.',
+  examples: ['What is the balance for L-1001?', 'Who should I call first?', 'L-1003 says they already paid, reference CFORD-L1002', 'Send a payment link to L-1001'],
 }
 
 type Dict = typeof en
@@ -245,6 +251,12 @@ const hi: Dict = {
   messages: 'संदेश',
   empty: 'यहाँ कोई नहीं।',
   emptyStart: 'शुरू करने के लिए सूची जोड़ें।',
+  explainThis: 'इसे बोलकर समझाएँ',
+  tryAsking: 'ऐसे बोलकर देखें',
+  sayLike: 'कुछ ऐसा बोलें',
+  tooMany: 'बहुत ज़्यादा अनुरोध। कुछ सेकंड रुकें।',
+  budgetOut: 'आज की आवाज़ सहायता खत्म हो गई। लिखकर पूछ सकते हैं।',
+  examples: ['L-1001 का बकाया कितना है?', 'पहले किसे कॉल करूँ?', 'L-1003 कह रहे हैं भुगतान हो गया, रेफ़रेंस CFORD-L1002', 'L-1001 को भुगतान लिंक भेजिए'],
 }
 
 const ta: Dict = {
@@ -367,10 +379,16 @@ const ta: Dict = {
   messages: 'செய்திகள்',
   empty: 'இங்கே யாரும் இல்லை.',
   emptyStart: 'தொடங்க ஒரு பட்டியலைச் சேர்க்கவும்.',
+  explainThis: 'இதைக் குரலில் விளக்கு',
+  tryAsking: 'இப்படிச் சொல்லிப் பாருங்கள்',
+  sayLike: 'இப்படி ஏதாவது சொல்லுங்கள்',
+  tooMany: 'அதிகமான கோரிக்கைகள். சில வினாடிகள் காத்திருங்கள்.',
+  budgetOut: 'இன்றைய குரல் உதவி முடிந்தது. எழுதிக் கேட்கலாம்.',
+  examples: ['L-1001 கணக்கு நிலுவை என்ன?', 'முதலில் யாரை அழைக்க வேண்டும்?', 'L-1003 பணம் கட்டிட்டேன்னு சொல்றாங்க, ref CFORD-L1002', 'L-1001 க்கு கட்டண இணைப்பு அனுப்புங்க'],
 }
 
 export const DICTS: Record<Lang, Dict> = { 'en-IN': en, 'hi-IN': hi, 'ta-IN': ta }
-export type Key = keyof Dict
+export type Key = { [K in keyof Dict]: Dict[K] extends string ? K : never }[keyof Dict]
 export const LANG_LABEL: Record<Lang, string> = { 'en-IN': 'English', 'hi-IN': 'हिंदी', 'ta-IN': 'தமிழ்' }
 
 export function groupLabel(d: Dict, g: Decision) {

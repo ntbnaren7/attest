@@ -189,4 +189,5 @@ export const api = {
     return call<Turn>('/api/coordinator/voice', { method: 'POST', body: fd })
   },
   changes: () => call<TraceRow[]>('/api/trace'),
+  help: (topic: string, lang: Lang) => call<{ text: string; audio_b64: string | null }>(`/api/help/${encodeURIComponent(topic)}?lang=${lang}`),
 }

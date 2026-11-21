@@ -5,6 +5,7 @@ import { ago, inr, time } from '../format'
 import { type Key } from '../i18n'
 import { usePrefs } from '../prefs'
 import { StatusIcon, StatusPill } from './Status'
+import { HelpButton } from './HelpButton'
 
 const CLAIM_WORDS: Record<string, string> = {
   paid: 'says it is already paid',
@@ -186,6 +187,7 @@ export function CaseDrawer({ id, onClose, onChanged, onApprove }: {
           <section className="next">
             <div className="section-title" style={{ margin: 0 }}>{t.nextStep}</div>
             {canLink && (
+              <div className="with-help">
               <button
                 className="btn big"
                 disabled={!!busy}
@@ -201,6 +203,8 @@ export function CaseDrawer({ id, onClose, onChanged, onApprove }: {
               >
                 <Send size={18} /> {t.sendLink} · <span className="num">{inr(d.collectible_paise)}</span>
               </button>
+              <HelpButton topic="send_link" label={t.sendLink} />
+              </div>
             )}
             {!canLink && d.decision === 'CONTACT' && <div>{reasonLocal}</div>}
             {d.decision === 'HOLD' && <div>{t.waitNote}</div>}
@@ -222,10 +226,11 @@ export function CaseDrawer({ id, onClose, onChanged, onApprove }: {
               </div>
             )}
             {d.decision === 'CONTACT' && !d.contact_allowed_now && <div className="notice s-HOLD">{t.afterEight}</div>}
-            <div>
-              <button className="btn ghost" onClick={() => run('refresh', () => api.refresh(id))} disabled={!!busy}>
+            <div className="with-help" style={{ justifyContent: 'flex-start' }}>
+              <button className="btn ghost" style={{ flex: 'none' }} onClick={() => run('refresh', () => api.refresh(id))} disabled={!!busy}>
                 {busy === 'refresh' ? <Loader2 size={16} className="spin" /> : <RefreshCw size={16} />} {t.checkAgain}
               </button>
+              <HelpButton topic="check_again" label={t.checkAgain} />
             </div>
             {err && <div className="err">{err}</div>}
           </section>

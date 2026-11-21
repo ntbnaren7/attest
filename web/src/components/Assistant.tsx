@@ -1,8 +1,11 @@
 import { useRef, useState, type FormEvent } from 'react'
 import { Ban, Check, Loader2, Mic, Send } from 'lucide-react'
-import { api, ApiError, type Approval, type Lang, type Turn } from '../api'
+import { api, type Approval, type Lang, type Turn } from '../api'
 import { LANG_LABEL } from '../i18n'
 import { usePrefs } from '../prefs'
+import { DICTS } from '../i18n'
+import { errText } from '../errors'
+import { HelpButton } from './HelpButton'
 
 const STEP_WORDS: Record<string, string> = {
   check_payment_reference: 'Checked the payment with Cashfree',
@@ -32,6 +35,7 @@ export function Assistant({ voiceOn, focusId, onCase, onApprove, onChanged }: {
   const conv = useRef<string | null>(null)
   const rec = useRef<MediaRecorder | null>(null)
   const chunks = useRef<Blob[]>([])
+  const examples = DICTS[speakLang ?? lang].examples
 
   function took(turn: Turn) {
     conv.current = turn.conversation_id
@@ -51,7 +55,20 @@ export function Assistant({ voiceOn, focusId, onCase, onApprove, onChanged }: {
       took(await api.say(text.trim(), speakLang ?? lang, conv.current, focusId))
       setText('')
     } catch (x) {
-      setErr(x instanceof ApiError ? x.message : String(x))
+      setErr(errText(x, t))
+    } finally {
+      setState('idle')
+    }
+  }
+
+  async function ask(q: string) {
+    if (state !== 'idle') return
+    setState('busy')
+    setErr('')
+    try {
+      took(await api.say(q, speakLang ?? lang, conv.current, focusId))
+    } catch (x) {
+      setErr(errText(x, t))
     } finally {
       setState('idle')
     }
@@ -76,7 +93,7 @@ export function Assistant({ voiceOn, focusId, onCase, onApprove, onChanged }: {
         try {
           took(await api.speak(blob, speakLang, conv.current, focusId))
         } catch (x) {
-          setErr(x instanceof ApiError ? x.message : String(x))
+          setErr(errText(x, t))
         } finally {
           setState('idle')
         }
@@ -109,6 +126,7 @@ export function Assistant({ voiceOn, focusId, onCase, onApprove, onChanged }: {
         ))}
       </div>
 
+      <div className="with-help" style={{ marginTop: 12 }}>
       <button
         className={`mic ${state === 'rec' ? 'rec' : ''}`}
         disabled={!voiceOn || state === 'busy'}
@@ -121,6 +139,13 @@ export function Assistant({ voiceOn, focusId, onCase, onApprove, onChanged }: {
         {state === 'busy' ? <Loader2 size={22} className="spin" /> : <Mic size={22} />}
         {state === 'rec' ? t.listening : state === 'busy' ? t.thinking : t.holdToSpeak}
       </button>
+      <HelpButton topic="speak" label={t.holdToSpeak} />
+      </div>
+      {state === 'rec' && (
+        <div className="say-like" aria-live="polite">
+          <span className="muted small">{t.sayLike}:</span> “{examples[0]}”
+        </div>
+      )}
       {!voiceOn && <div className="muted small" style={{ marginTop: 6 }}>{t.voiceOffNote}</div>}
 
       <form className="ask" onSubmit={submit}>
@@ -130,6 +155,19 @@ export function Assistant({ voiceOn, focusId, onCase, onApprove, onChanged }: {
         </button>
       </form>
       {err && <div className="err" style={{ marginTop: 8 }}>{err}</div>}
+
+      {turns.length < 2 && (
+        <div className="examples">
+          <div className="muted small">{t.tryAsking}:</div>
+          <div className="chips">
+            {examples.map((ex) => (
+              <button key={ex} type="button" className="chip" onClick={() => ask(ex)} disabled={state !== 'idle'}>
+                “{ex}”
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="chat">
         {turns.map((tu, i) => (

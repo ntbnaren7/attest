@@ -3,6 +3,7 @@ import { CheckCircle2, Loader2, ShieldCheck } from 'lucide-react'
 import { api, ApiError, type Approval } from '../api'
 import { inr } from '../format'
 import { usePrefs } from '../prefs'
+import { HelpButton } from './HelpButton'
 
 /** The only place money-moving actions are authorized. Voice never reaches this. */
 export function ApproveDialog({ approval, name, reason, onClose, onDone }: {
@@ -82,7 +83,8 @@ export function ApproveDialog({ approval, name, reason, onClose, onDone }: {
                 <div className="small">{err.detail}</div>
               </div>
             )}
-            <div className="actions">
+            <div className="actions" style={{ alignItems: 'center' }}>
+              <HelpButton topic="approve" label={t.approveSend} />
               <button className="btn ghost" onClick={onClose}>
                 {t.cancel}
               </button>

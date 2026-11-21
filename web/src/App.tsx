@@ -11,6 +11,7 @@ import { PeopleList } from './components/PeopleList'
 import { Summary } from './components/Summary'
 import { TopBar } from './components/TopBar'
 import { ImportDialog } from './components/ImportDialog'
+import { HelpButton } from './components/HelpButton'
 
 type Pending = { approval: Approval; name: string; reason: string }
 
@@ -92,9 +93,12 @@ export default function App() {
               {filter ? t[`groupHint_${filter}`] : new Date().toLocaleDateString(lang, { weekday: 'long', day: 'numeric', month: 'long' })}
             </div>
           </div>
-          <button className="btn ghost" onClick={() => setImporting(true)}>
-            <Upload size={16} /> {t.addList}
-          </button>
+          <div className="with-help">
+            <button className="btn ghost" onClick={() => setImporting(true)}>
+              <Upload size={16} /> {t.addList}
+            </button>
+            <HelpButton topic="add_list" label={t.addList} />
+          </div>
         </div>
 
         {q && <Summary q={q} filter={filter} setFilter={setFilter} />}
