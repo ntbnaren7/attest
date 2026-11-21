@@ -28,7 +28,7 @@ def test_promise_message_becomes_a_claim_and_holds_the_account(meena, fake):
     fake("धन्यवाद, हमने आपकी बात नोट कर ली है।")
     out = meena.post("/api/inbox/message", data={"phone": "+919999999990", "text": "kal 3300 de dunga", "account_id": acct}).json()
     assert [c["kind"] for c in out["claims"]] == ["promise"]
-    assert out["decision"]["code"] == "PROMISE_ACTIVE" and out["reply_source"] == "sarvam_natural"
+    assert out["decision"]["code"] == "PROMISE_ACTIVE" and out["reply_source"] == "template"   # offline: no grounded writer
 
 
 def test_paid_claim_triggers_a_cashfree_check(meena, fake):
@@ -63,3 +63,28 @@ def test_sender_must_map_to_one_account_in_this_book(meena, arun, fake):
     other = row(meena, "L-1001")["account_id"]
     out = arun.post("/api/inbox/message", data={"text": "hello", "account_id": other}).json()
     assert out["account"] is None                                                  # another tenant's account
+
+
+def test_thread_keeps_messages_and_facts_are_verified_only(meena, fake):
+    upload(meena, "borrower_batch_A.csv")
+    acct = row(meena, "L-1012")["account_id"]
+    fake("Noted, thank you.", lang="en-IN")
+    meena.post("/api/inbox/message", data={"text": "how much do I owe?", "account_id": acct})
+    meena.post("/api/inbox/message", data={"text": "I will pay tomorrow", "account_id": acct})
+    t = meena.get(f"/api/inbox/thread/{acct}").json()
+    assert [m["text"] for m in t["messages"]] == ["how much do I owe?", "I will pay tomorrow"]
+    assert all(m["reply"] for m in t["messages"]) and t["messages"][1]["claims"] == ["promise"]
+    assert t["facts"]["amount_due"] == "₹3,300.50" and "_allowed_paise" not in t["facts"]
+
+
+def test_thread_is_tenant_scoped(meena, arun):
+    upload(meena, "borrower_batch_A.csv")
+    assert arun.get(f"/api/inbox/thread/{row(meena, 'L-1012')['account_id']}").status_code == 404
+
+
+def test_waiver_or_refund_request_gets_a_clear_human_review_answer(meena, fake):
+    upload(meena, "borrower_batch_A.csv")
+    fake("ok", lang="en-IN")
+    out = meena.post("/api/inbox/message", data={"text": "please waive the fee and refund 5000",
+                                                 "account_id": row(meena, "L-1011")["account_id"]}).json()
+    assert "can't approve a waiver or refund" in out["reply"] and "₹12,000" in out["reply"]

@@ -103,6 +103,15 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
         finally:
             sec.inflight.release(op.id)
 
+    @app.get("/api/inbox/thread/{account_id}")
+    def inbox_thread(account_id: str, op: auth.Operator = Depends(operator)):
+        sec.limit("read", f"thread:{op.id}")
+        if not ctx.db.one("SELECT 1 FROM accounts WHERE id=? AND merchant_id=?", (account_id, op.merchant_id)):
+            raise HTTPException(404, "not found")
+        facts = inbox.facts_for(ctx, op.merchant_id, account_id)
+        facts.pop("_allowed_paise", None)
+        return {"facts": facts, "messages": inbox.history(ctx, op.merchant_id, account_id, limit=50)}
+
     # ---------------------------------------------------------------- reconciliation (teammate engine, recon/)
     @app.get("/api/recon/status")
     def recon_status(op: auth.Operator = Depends(operator)):

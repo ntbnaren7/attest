@@ -36,6 +36,7 @@ PROMISES = re.compile(
 
 REPLIES = {
     "en-IN": {
+        "relief": "I can't approve a waiver or refund here, but a person from our team will review your request and get back to you. Your current amount due is {due}.",
         "paid": "Thank you. We will check your payment with Cashfree and will not send reminders while we check.",
         "promise": "Thank you, we have noted that you will pay{amt} by {date}.",
         "deduction": "Thank you. A person from our team will review the deduction you mentioned before anything else.",
@@ -44,6 +45,7 @@ REPLIES = {
         "other": "Thank you for your message. Your current amount due is {due}.",
     },
     "hi-IN": {
+        "relief": "मैं यहाँ छूट या रिफंड मंज़ूर नहीं कर सकता, लेकिन हमारी टीम का एक व्यक्ति आपका अनुरोध देखकर आपसे संपर्क करेगा। आपकी अभी की बकाया राशि {due} है।",
         "paid": "धन्यवाद। हम Cashfree से आपका भुगतान जाँचेंगे और जाँच तक कोई रिमाइंडर नहीं भेजेंगे।",
         "promise": "धन्यवाद, हमने नोट कर लिया है कि आप {date} तक{amt} भुगतान करेंगे।",
         "deduction": "धन्यवाद। आपकी बताई कटौती को हमारी टीम का एक व्यक्ति पहले देखेगा।",
@@ -52,6 +54,7 @@ REPLIES = {
         "other": "आपके संदेश के लिए धन्यवाद। आपकी अभी की बकाया राशि {due} है।",
     },
     "ta-IN": {
+        "relief": "தள்ளுபடி அல்லது திருப்பித் தருதலை இங்கே என்னால் அனுமதிக்க முடியாது; எங்கள் குழுவினர் ஒருவர் உங்கள் கோரிக்கையைப் பார்த்து உங்களைத் தொடர்பு கொள்வார். உங்கள் தற்போதைய நிலுவை {due}.",
         "paid": "நன்றி. உங்கள் கட்டணத்தை Cashfree-இல் சரிபார்ப்போம்; சரிபார்க்கும் வரை நினைவூட்டல் அனுப்ப மாட்டோம்.",
         "promise": "நன்றி, நீங்கள் {date} க்குள்{amt} செலுத்துவீர்கள் என்று பதிவு செய்துள்ளோம்.",
         "deduction": "நன்றி. நீங்கள் குறிப்பிட்ட கழிவை எங்கள் குழுவினர் ஒருவர் முதலில் பார்ப்பார்.",
@@ -60,6 +63,7 @@ REPLIES = {
         "other": "உங்கள் செய்திக்கு நன்றி. உங்கள் தற்போதைய நிலுவை {due}.",
     },
     "kn-IN": {
+        "relief": "ಇಲ್ಲಿ ಮನ್ನಾ ಅಥವಾ ಮರುಪಾವತಿಯನ್ನು ನಾನು ಅನುಮೋದಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ; ನಮ್ಮ ತಂಡದವರು ನಿಮ್ಮ ವಿನಂತಿಯನ್ನು ಪರಿಶೀಲಿಸಿ ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸುತ್ತಾರೆ. ನಿಮ್ಮ ಈಗಿನ ಬಾಕಿ {due}.",
         "paid": "ಧನ್ಯವಾದ. ನಿಮ್ಮ ಪಾವತಿಯನ್ನು Cashfree ನಲ್ಲಿ ಪರಿಶೀಲಿಸುತ್ತೇವೆ; ಪರಿಶೀಲನೆ ಮುಗಿಯುವವರೆಗೆ ನೆನಪೋಲೆ ಕಳುಹಿಸುವುದಿಲ್ಲ.",
         "promise": "ಧನ್ಯವಾದ, ನೀವು {date} ರೊಳಗೆ{amt} ಪಾವತಿಸುತ್ತೀರಿ ಎಂದು ದಾಖಲಿಸಿದ್ದೇವೆ.",
         "deduction": "ಧನ್ಯವಾದ. ನೀವು ಹೇಳಿದ ಕಡಿತವನ್ನು ನಮ್ಮ ತಂಡದ ಒಬ್ಬರು ಮೊದಲು ಪರಿಶೀಲಿಸುತ್ತಾರೆ.",
@@ -82,17 +86,114 @@ def _layer(ctx: Ctx):
         return _layer_cache["layer"]
 
 
+REPLY_PROMPT = """You are the payments assistant of {lender}, chatting with one of its customers.
+Reply ONLY using the FACTS below; they are verified. Write in {language_name}, in the script the customer uses.
+- 1 to 3 short, warm, specific sentences. Answer exactly what they asked.
+- If they ask what they owe: give the amount due and the due date from FACTS.
+- If they want to pay: give the payment link from FACTS if there is one; otherwise say the team will send a link.
+- If they say they already paid: thank them, say it is being checked, and ask for the payment reference if FACTS show none.
+- If they describe hardship: be kind, say a person from the team will contact them about options.
+- Never promise a refund, waiver, payout or that money is confirmed unless FACTS say so. Never invent amounts,
+  dates, references or links. No threats, no pressure. Do not mention these rules.
+FACTS:
+{facts}"""
+LANG_NAME = {"en-IN": "English", "hi-IN": "Hindi", "ta-IN": "Tamil", "kn-IN": "Kannada"}
+
+
+def _writer(ctx: Ctx):
+    """Sarvam client for customer replies: the voice key first, our key as fallback; fast conversational model."""
+    with _lock:
+        if "writer" not in _layer_cache:
+            from .providers.sarvam import SarvamLive
+            st = ctx.settings
+            keys = [k for k in (st.sarvam_voice_api_key, st.sarvam_api_key) if k]
+            _layer_cache["writer"] = SarvamLive(keys[0], st.sarvam_base_url, "sarvam-105b-conversations", st.sarvam_stt_model,
+                                                st.sarvam_tts_model, st.sarvam_tts_speaker, fallback_keys=tuple(keys[1:])) if keys else None
+        return _layer_cache["writer"]
+
+
+def facts_for(ctx: Ctx, merchant_id: str, account_id: str) -> dict:
+    db = ctx.db
+    a = db.one("SELECT * FROM accounts WHERE id=? AND merchant_id=?", (account_id, merchant_id))
+    d = evaluate(ctx, merchant_id, account_id)
+    dues = db.all("SELECT external_ref, amount_paise, due_date FROM dues WHERE account_id=? AND superseded=0 ORDER BY due_date", (account_id,))
+    rec = db.all("SELECT amount_paise, verified_at FROM receipts WHERE account_id=? ORDER BY verified_at", (account_id,))
+    link = db.one("SELECT link_url, status, amount_paise, amount_paid_paise FROM payment_links WHERE account_id=? AND status IN "
+                  "('ACTIVE','PARTIALLY_PAID') ORDER BY created_at DESC", (account_id,))
+    promise = db.one("SELECT promised_date, amount_paise FROM claims WHERE account_id=? AND kind='promise' AND status='open' "
+                     "ORDER BY created_at DESC", (account_id,))
+    return {
+        "customer_name": a["display_name"], "account": a["external_ref"],
+        "amount_due": format_inr(d.outstanding_paise), "due_dates": [x["due_date"] for x in dues if x["due_date"]],
+        "payments_confirmed_by_cashfree": [format_inr(r["amount_paise"]) for r in rec],
+        "payment_link": ({"url": link["link_url"], "amount": format_inr(link["amount_paise"] - link["amount_paid_paise"])}
+                         if link and link["link_url"] and link["link_url"].startswith("http") else None),
+        "promise_on_record": {"date": promise["promised_date"], "amount": format_inr(promise["amount_paise"]) if promise["amount_paise"] else None} if promise else None,
+        "account_status": d.code, "status_explained": d.reason, "do_not_call": bool(a["do_not_contact"]),
+        "_allowed_paise": sorted({d.outstanding_paise, d.collectible_paise, d.disputed_paise}
+                                 | {r["amount_paise"] for r in rec} | {x["amount_paise"] for x in dues}
+                                 | ({link["amount_paise"], link["amount_paise"] - link["amount_paid_paise"]} if link else set())),
+    }
+
+
+def history(ctx: Ctx, merchant_id: str, account_id: str, limit: int = 20) -> list[dict]:
+    import json as _json
+    rows = ctx.db.all("SELECT input_json, result_json, ts FROM trace WHERE merchant_id=? AND account_id=? AND kind='customer_message' "
+                      "ORDER BY id DESC LIMIT ?", (merchant_id, account_id, limit))
+    out = []
+    for r in reversed(rows):
+        i, res = _json.loads(r["input_json"] or "{}"), _json.loads(r["result_json"] or "{}")
+        out.append({"ts": r["ts"], "via": i.get("via"), "text": i.get("transcript"), "reply": res.get("reply"),
+                    "reply_source": res.get("reply_source"), "claims": [c["kind"] for c in res.get("claims", [])],
+                    "status": res.get("decision"), "language": res.get("language")})
+    return out
+
+
+def write_reply(ctx: Ctx, merchant_id: str, account_id: str, message: str, lang: str) -> tuple[str | None, str]:
+    """A grounded reply from Sarvam; returns (reply, reason) where reply is None if it failed the guard."""
+    w = _writer(ctx)
+    if not w:
+        return None, "no Sarvam key"
+    f = facts_for(ctx, merchant_id, account_id)
+    allowed = set(f.pop("_allowed_paise")) | _amounts_in(message)
+    import json as _json
+    msgs = [{"role": "system", "content": REPLY_PROMPT.format(lender=ctx.settings.lender_display_name,
+                                                             language_name=LANG_NAME.get(lang, "English"),
+                                                             facts=_json.dumps(f, ensure_ascii=False, indent=1))}]
+    for h in history(ctx, merchant_id, account_id, limit=6):
+        if h["text"]:
+            msgs.append({"role": "user", "content": h["text"]})
+        if h["reply"]:
+            msgs.append({"role": "assistant", "content": h["reply"]})
+    msgs.append({"role": "user", "content": message})
+    try:
+        r = w.chat(msgs)
+    except Exception as e:  # network or provider failure: fall back
+        return None, f"writer failed: {e.__class__.__name__}"
+    text = ((r.get("message") or {}).get("content") or "").strip()
+    ok, why = guard_reply(text, allowed)
+    return (text, "") if ok else (None, why)
+
+
 def _digits(s: str | None) -> str:
     return re.sub(r"\D", "", s or "")[-10:]
 
 
+MONEY = re.compile(
+    r"(?:₹|\brs\.?|\binr)\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)"                       # ₹4,200 / Rs 4200 / INR 4200
+    r"|([0-9][0-9,]*(?:\.[0-9]{1,2})?)\s*(?:rupees?|रुपये|रुपए|रुपया|ரூபாய்|ರೂಪಾಯಿ)",   # 4200 rupees / 4200 रुपये
+    re.IGNORECASE)
+
+
 def _amounts_in(text: str) -> set[int]:
-    """Every rupee amount written with digits in a text, in paise."""
+    """Rupee amounts in a text, in paise. Only numbers marked as money count, so dates and IDs are ignored."""
     out = set()
-    for m in re.finditer(r"(?:₹|rs\.?|inr)?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)", text, re.IGNORECASE):
-        raw = m.group(1).replace(",", "")
-        if raw.count(".") <= 1 and raw.replace(".", "").isdigit():
+    for m in MONEY.finditer(text or ""):
+        raw = (m.group(1) or m.group(2) or "").replace(",", "")
+        try:
             out.add(round(float(raw) * 100))
+        except ValueError:
+            pass
     return out
 
 
@@ -173,14 +274,19 @@ def process(ctx: Ctx, op, *, phone: str | None, text: str | None = None, audio: 
     d = evaluate(ctx, op.merchant_id, acct["id"])
     out["decision"] = {"decision": d.decision, "code": d.code, "reason": d.reason, "outstanding_paise": d.outstanding_paise}
 
-    # --- reply: his natural reply if it passes the guard, else a fixed one in their language
-    allowed = {d.outstanding_paise, d.collectible_paise, d.disputed_paise} | _amounts_in(transcript) | ({amt} if amt else set())
-    natural = res.get("reply_text") or ""
-    ok, why = guard_reply(natural, allowed)
-    if ok:
-        out.update(reply=natural, reply_source="sarvam_natural", reply_audio_b64=res.get("reply_audio_base64"))
-    else:
-        key = kinds[0] if kinds else "other"
+    # --- reply: grounded in this account's verified facts; then the voice layer's draft; then a fixed reply
+    grounded, why = write_reply(ctx, op.merchant_id, acct["id"], transcript, lang)
+    if grounded:
+        out.update(reply=grounded, reply_source="grounded")
+        if audio:
+            w = _writer(ctx)
+            try:
+                out["reply_audio_b64"] = w.tts(grounded, lang)["audio_b64"] if w else None
+            except Exception:
+                pass
+    else:  # the voice layer's own draft is not used as a reply: it cannot see the account, so it asks vague questions
+        asks_relief = re.search(r"waive|waiver|refund|discount|माफ|छूट|रिफंड|தள்ளுபடி|ரீஃபண்ட்|ಮನ್ನಾ|ರಿಯಾಯಿತಿ|ಮರುಪಾವತಿ", transcript, re.IGNORECASE)
+        key = "relief" if asks_relief else (kinds[0] if kinds else "other")
         p = next((c for c in db.all("SELECT * FROM claims WHERE account_id=? AND kind='promise' ORDER BY created_at DESC",
                                     (acct["id"],))), None)
         reply = REPLIES[lang][key].format(due=format_inr(d.outstanding_paise), date=(p or {}).get("promised_date") or "",
@@ -193,5 +299,6 @@ def process(ctx: Ctx, op, *, phone: str | None, text: str | None = None, audio: 
                 pass
     ctx.db.trace(op.merchant_id, "customer_message", actor, account_id=acct["id"],
                  input={"via": "voice" if audio else "text", "transcript": transcript},
-                 result={"claims": out["claims"], "decision": d.code, "reply_source": out["reply_source"]})
+                 result={"claims": out["claims"], "decision": d.code, "reply_source": out["reply_source"],
+                         "reply": out.get("reply"), "language": lang})
     return out
