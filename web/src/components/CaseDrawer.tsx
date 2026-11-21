@@ -195,6 +195,25 @@ export function CaseDrawer({ id, onClose, onChanged, onApprove }: {
         {d.disputed_paise > 0 && <span className="disputed" style={{ width: `${(d.disputed_paise / total) * 100}%` }} />}
       </div>
 
+      {d.decision === 'CONTACT' && (
+        <div className="block">
+          <div className="overline">{t.likelihood}</div>
+          <div className="likely">
+            <span className="meter" aria-hidden>
+              <span style={{ width: `${Math.max(0, Math.min(100, d.score))}%` }} />
+            </span>
+            <span className="num">{Math.round(d.score)}/100</span>
+          </div>
+          {d.factors.length > 0 && (
+            <ul className="factor-list">
+              {d.factors.slice(0, 4).map((f) => (
+                <li key={f}>{f}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
       <div className="block action">
         <div className="overline">{t.nextStep}</div>
         {canLink && (
