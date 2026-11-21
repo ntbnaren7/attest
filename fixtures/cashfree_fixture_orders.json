@@ -1,0 +1,15 @@
+{
+  "_label": "FIXTURE provider responses (simulated). Shapes follow GET /pg/orders/{order_id}/payments. Not Cashfree sandbox data.",
+  "lender_demo": {
+    "CFORD-L1002": [{"cf_payment_id": "fx_pay_L1002_1", "payment_status": "SUCCESS", "amount_paise": 650000, "payment_time": "2026-11-19T10:12:00+05:30"}],
+    "CFORD-L1007": [{"cf_payment_id": "fx_pay_L1007_1", "payment_status": "PENDING", "amount_paise": 800000, "payment_time": "2026-11-20T18:40:00+05:30"}],
+    "CFORD-L1008": [{"cf_payment_id": "fx_pay_L1008_0", "payment_status": "FAILED", "amount_paise": 900000, "payment_time": "2026-11-17T09:00:00+05:30"},
+                    {"cf_payment_id": "fx_pay_L1008_1", "payment_status": "SUCCESS", "amount_paise": 300000, "payment_time": "2026-11-18T09:05:00+05:30"}]
+  },
+  "supplier_demo": {
+    "CFORD-B501": [{"cf_payment_id": "fx_pay_B501_1", "payment_status": "SUCCESS", "amount_paise": 2000000, "payment_time": "2026-11-15T11:00:00+05:30"}],
+    "CFORD-B502": [{"cf_payment_id": "fx_pay_B502_1", "payment_status": "SUCCESS", "amount_paise": 1800000, "payment_time": "2026-11-18T16:20:00+05:30"}],
+    "CFORD-B504": [{"cf_payment_id": "fx_pay_B504_1", "payment_status": "SUCCESS", "amount_paise": 1000000, "payment_time": "2026-11-16T12:00:00+05:30"}],
+    "CFORD-B506": [{"cf_payment_id": "fx_pay_B506_1", "payment_status": "SUCCESS", "amount_paise": 750000, "payment_time": "2026-11-19T15:00:00+05:30"}]
+  }
+}

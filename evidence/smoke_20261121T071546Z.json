@@ -1,0 +1,20 @@
+{
+ "cashfree": {
+  "status": "blocked",
+  "reason": "CASHFREE_CLIENT_ID / CASHFREE_CLIENT_SECRET not set"
+ },
+ "sarvam": {
+  "status": "blocked",
+  "reason": "SARVAM_API_KEY not set"
+ },
+ "relay": {
+  "status": "blocked",
+  "reason": "RELAY_WEBHOOK_URL not set; Relay documents no public run API. Manual Test-flow step required.",
+  "packet": {
+   "case_id": "smoke",
+   "allowed_action": "operator_alert_test",
+   "test_mode": true,
+   "message": "Smoke test from receivables queue (synthetic)"
+  }
+ }
+}

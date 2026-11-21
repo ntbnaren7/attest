@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Collections Queue</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div id="login" class="login hidden">
+  <form id="loginForm" class="card">
+    <h1>Collections Queue</h1>
+    <p class="muted">Synthetic data · Cashfree sandbox · controlled test recipients only</p>
+    <label>Username <input name="username" autocomplete="username" value="meena"></label>
+    <label>Password <input name="password" type="password" autocomplete="current-password"></label>
+    <button type="submit">Sign in</button>
+    <p class="muted small">Demo operators: <code>meena</code> (Problem 2 borrower book), <code>arun</code> (B2B supplier adaptation), <code>caller1</code> (no approval rights).</p>
+    <p id="loginErr" class="err"></p>
+  </form>
+</div>
+
+<div id="app" class="hidden">
+  <header>
+    <div>
+      <strong id="tenant"></strong> <span id="modeBadge" class="badge"></span>
+      <div class="muted small" id="who"></div>
+    </div>
+    <div id="integrations" class="integrations"></div>
+    <button id="logout" class="ghost">Sign out</button>
+  </header>
+
+  <main>
+    <section class="col queue-col">
+      <div class="card">
+        <div class="row between">
+          <h2>Import batch</h2>
+          <span class="muted small">CSV or JSON · rows with problems are reported, not guessed</span>
+        </div>
+        <form id="importForm" class="row">
+          <input type="file" name="file" accept=".csv,.json" required>
+          <button type="submit">Import</button>
+        </form>
+        <div id="importReport"></div>
+      </div>
+
+      <div class="card">
+        <div class="row between">
+          <h2>Who to contact now</h2>
+          <div class="row">
+            <select id="batchSel"><option value="">All batches</option></select>
+            <span id="counts" class="muted small"></span>
+          </div>
+        </div>
+        <div id="changes"></div>
+        <table class="queue">
+          <thead><tr><th>#</th><th>Account</th><th>Still due</th><th>Decision</th><th>Why</th><th>Verified</th></tr></thead>
+          <tbody id="queueBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="col side-col">
+      <div class="card" id="coord">
+        <div class="row between">
+          <h2>Talk to the coordinator</h2>
+          <select id="lang">
+            <option value="">Auto language</option><option value="ta-IN">தமிழ்</option>
+            <option value="hi-IN">हिंदी</option><option value="en-IN">English</option>
+          </select>
+        </div>
+        <p class="muted small">Ask about an account, relay what a payer said, or ask for a payment link. Voice can propose; only the on-screen approval can authorize.</p>
+        <div class="row">
+          <button id="micBtn" class="mic" type="button">● Hold to speak</button>
+          <form id="textForm" class="row grow"><input id="textIn" class="grow" placeholder="e.g. L-1003 कह रहे हैं payment हो चुका है, ref CFORD-L1002"><button>Send</button></form>
+        </div>
+        <div id="conv" class="conv"></div>
+      </div>
+
+      <div class="card" id="casePanel">
+        <h2>Case</h2>
+        <p class="muted">Select an account in the queue.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<dialog id="approveDlg">
+  <form method="dialog" id="approveForm">
+    <h2>Approve payment link</h2>
+    <p class="muted small">This approval is bound to exactly these values. If anything changes before the link is created, the approval is refused as stale.</p>
+    <dl id="approveFields" class="kv"></dl>
+    <label class="check"><input type="checkbox" id="approveCheck"> I checked the account, amount and recipient.</label>
+    <p id="approveErr" class="err"></p>
+    <div class="row end">
+      <button value="cancel" class="ghost">Cancel</button>
+      <button id="approveGo" value="default" disabled>Approve and create link</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
