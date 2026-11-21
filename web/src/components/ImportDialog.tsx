@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
-import { CheckCircle2, FileUp, Loader2, TriangleAlert } from 'lucide-react'
-import { api, ApiError, type ImportReport } from '../api'
+import { CheckCircle2, FileUp, Loader2 } from 'lucide-react'
+import { api, type ImportReport } from '../api'
+import { errText } from '../errors'
 import { usePrefs } from '../prefs'
 
 export function ImportDialog({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
@@ -19,7 +20,7 @@ export function ImportDialog({ onClose, onDone }: { onClose: () => void; onDone:
       setRep(await api.importFile(file))
       onDone()
     } catch (e) {
-      setErr(e instanceof ApiError ? e.message : String(e))
+      setErr(errText(e, t))
     } finally {
       setBusy(false)
     }
@@ -27,9 +28,10 @@ export function ImportDialog({ onClose, onDone }: { onClose: () => void; onDone:
 
   return (
     <div className="dialog-wrap">
-      <div className="scrim" onClick={onClose} />
-      <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="import-title" style={{ zIndex: 31 }}>
+      <div className="overlay" onClick={onClose} />
+      <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="import-title">
         <h2 id="import-title">{t.addList}</h2>
+        <p className="intro">{t.addListHint}</p>
         {!rep && (
           <div
             className="drop"
@@ -39,51 +41,51 @@ export function ImportDialog({ onClose, onDone }: { onClose: () => void; onDone:
               pick(e.dataTransfer.files[0])
             }}
           >
-            {busy ? <Loader2 size={28} className="spin" /> : <FileUp size={28} />}
-            <div className="muted">{busy ? t.uploading : t.addListHint}</div>
+            {busy ? <Loader2 size={24} className="spin" /> : <FileUp size={24} strokeWidth={1.6} />}
+            <div>{busy ? t.uploading : 'CSV · JSON'}</div>
             <input ref={input} type="file" accept=".csv,.json" className="sr" onChange={(e) => pick(e.target.files?.[0])} />
             <button className="btn" onClick={() => input.current?.click()} disabled={busy}>
               {t.chooseFile}
             </button>
           </div>
         )}
-        {err && <div className="notice s-REVIEW">{err}</div>}
+        {err && <p className="err">{err}</p>}
         {rep && (
-          <div style={{ display: 'grid', gap: 12 }}>
-            <div className="notice s-CONTACT" style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: 16 }}>
-              <CheckCircle2 /> <b className="num">{rep.valid_rows}</b> {t.added}
+          <div className="report">
+            <div className="success">
+              <CheckCircle2 size={20} /> <span className="num">{rep.valid_rows}</span> {t.added}
             </div>
             {rep.invalid_rows > 0 && (
-              <div className="notice s-REVIEW">
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center', fontWeight: 600 }}>
-                  <TriangleAlert size={18} /> <span className="num">{rep.invalid_rows}</span> {t.needFixing}
+              <div>
+                <div className="overline" style={{ color: 'var(--check)', marginBottom: 6 }}>
+                  {rep.invalid_rows} {t.needFixing}
                 </div>
-                <div className="problems" style={{ color: 'var(--ink)', marginTop: 8 }}>
+                <div className="problems">
                   {rep.invalid.map((p) => (
                     <div key={p.row}>
                       <b>
                         {t.row} {p.row}
                       </b>
-                      {p.account_ref ? ` · ${p.account_ref}` : ''} — {p.errors.join('; ')}
+                      {p.account_ref ? ` · ${p.account_ref}` : ''}: <span className="muted">{p.errors.join('; ')}</span>
                     </div>
                   ))}
                 </div>
               </div>
             )}
             {rep.protected_columns_dropped.length > 0 && (
-              <div className="small">
+              <div>
                 <span className="muted">{t.hiddenForFairness}:</span> {rep.protected_columns_dropped.join(', ')}
               </div>
             )}
             {rep.amount_changes.length > 0 && (
-              <div className="small">
+              <div>
                 <span className="muted">{t.changedAmounts}:</span> {rep.amount_changes.map((c) => `${c.invoice} ${c.from} → ${c.to}`).join('; ')}
               </div>
             )}
           </div>
         )}
-        <div className="actions">
-          <button className="btn ghost" onClick={onClose}>
+        <div className="footer">
+          <button className="btn secondary" onClick={onClose}>
             {t.close}
           </button>
         </div>

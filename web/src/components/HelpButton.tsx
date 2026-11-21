@@ -48,8 +48,8 @@ export function HelpButton({ topic, label }: { topic: HelpTopic; label?: string 
 
   return (
     <span className="help" ref={box}>
-      <button type="button" className="help-btn" onClick={explain} aria-label={`${t.explainThis}${label ? `: ${label}` : ''}`} title={t.explainThis}>
-        {busy ? <Loader2 size={15} className="spin" /> : <Volume2 size={15} />}
+      <button type="button" className="help-btn" onClick={explain} aria-expanded={!!text} aria-label={`${t.explainThis}${label ? `: ${label}` : ''}`} title={t.explainThis}>
+        {busy ? <Loader2 size={15} className="spin" /> : <Volume2 size={15} strokeWidth={1.8} />}
       </button>
       {text && (
         <span className="help-pop" role="status">

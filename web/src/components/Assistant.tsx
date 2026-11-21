@@ -1,10 +1,9 @@
 import { useRef, useState, type FormEvent } from 'react'
-import { Ban, Check, Loader2, Mic, Send } from 'lucide-react'
+import { ArrowUp, Ban, Check, Loader2, Mic } from 'lucide-react'
 import { api, type Approval, type Lang, type Turn } from '../api'
-import { LANG_LABEL } from '../i18n'
-import { usePrefs } from '../prefs'
-import { DICTS } from '../i18n'
+import { DICTS, LANG_LABEL } from '../i18n'
 import { errText } from '../errors'
+import { usePrefs } from '../prefs'
 import { HelpButton } from './HelpButton'
 
 const STEP_WORDS: Record<string, string> = {
@@ -46,13 +45,12 @@ export function Assistant({ voiceOn, focusId, onCase, onApprove, onChanged }: {
     onChanged()
   }
 
-  async function submit(e: FormEvent) {
-    e.preventDefault()
-    if (!text.trim()) return
+  async function ask(q: string) {
+    if (state !== 'idle' || !q.trim()) return
     setState('busy')
     setErr('')
     try {
-      took(await api.say(text.trim(), speakLang ?? lang, conv.current, focusId))
+      took(await api.say(q.trim(), speakLang ?? lang, conv.current, focusId))
       setText('')
     } catch (x) {
       setErr(errText(x, t))
@@ -61,17 +59,9 @@ export function Assistant({ voiceOn, focusId, onCase, onApprove, onChanged }: {
     }
   }
 
-  async function ask(q: string) {
-    if (state !== 'idle') return
-    setState('busy')
-    setErr('')
-    try {
-      took(await api.say(q, speakLang ?? lang, conv.current, focusId))
-    } catch (x) {
-      setErr(errText(x, t))
-    } finally {
-      setState('idle')
-    }
+  function submit(e: FormEvent) {
+    e.preventDefault()
+    ask(text)
   }
 
   async function start() {
@@ -111,11 +101,11 @@ export function Assistant({ voiceOn, focusId, onCase, onApprove, onChanged }: {
   }
 
   return (
-    <section className="card panel" aria-label={t.assistant}>
+    <section className="panel" aria-label={t.assistant}>
       <h2>{t.assistant}</h2>
-      <p className="muted small" style={{ margin: 0 }}>{t.assistantHint}</p>
+      <p className="lede">{t.assistantHint}</p>
 
-      <div className="seg" role="group" aria-label={t.language} style={{ marginTop: 12 }}>
+      <div className="segmented langs" role="group" aria-label={t.language}>
         <button type="button" aria-pressed={speakLang === null} onClick={() => setSpeakLang(null)}>
           {t.auto}
         </button>
@@ -126,83 +116,83 @@ export function Assistant({ voiceOn, focusId, onCase, onApprove, onChanged }: {
         ))}
       </div>
 
-      <div className="with-help" style={{ marginTop: 12 }}>
-      <button
-        className={`mic ${state === 'rec' ? 'rec' : ''}`}
-        disabled={!voiceOn || state === 'busy'}
-        onPointerDown={start}
-        onPointerUp={stop}
-        onPointerLeave={stop}
-        onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && !e.repeat && start()}
-        onKeyUp={(e) => (e.key === ' ' || e.key === 'Enter') && stop()}
-      >
-        {state === 'busy' ? <Loader2 size={22} className="spin" /> : <Mic size={22} />}
-        {state === 'rec' ? t.listening : state === 'busy' ? t.thinking : t.holdToSpeak}
-      </button>
-      <HelpButton topic="speak" label={t.holdToSpeak} />
+      <div className="speak-row">
+        <button
+          className={`mic ${state === 'rec' ? 'rec' : ''}`}
+          disabled={!voiceOn || state === 'busy'}
+          onPointerDown={start}
+          onPointerUp={stop}
+          onPointerLeave={stop}
+          onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && !e.repeat && start()}
+          onKeyUp={(e) => (e.key === ' ' || e.key === 'Enter') && stop()}
+        >
+          {state === 'busy' ? <Loader2 size={20} className="spin" /> : state === 'rec' ? <span className="pulse" /> : <Mic size={20} strokeWidth={1.9} />}
+          {state === 'rec' ? t.listening : state === 'busy' ? t.thinking : t.holdToSpeak}
+        </button>
+        <HelpButton topic="speak" label={t.holdToSpeak} />
       </div>
       {state === 'rec' && (
         <div className="say-like" aria-live="polite">
-          <span className="muted small">{t.sayLike}:</span> “{examples[0]}”
+          {t.sayLike}: <b>“{examples[0]}”</b>
         </div>
       )}
-      {!voiceOn && <div className="muted small" style={{ marginTop: 6 }}>{t.voiceOffNote}</div>}
+      {!voiceOn && <p className="quiet small">{t.voiceOffNote}</p>}
 
       <form className="ask" onSubmit={submit}>
-        <input value={text} onChange={(e) => setText(e.target.value)} placeholder={t.typeHere} aria-label={t.typeHere} />
-        <button className="btn" disabled={state !== 'idle' || !text.trim()} aria-label={t.send}>
-          <Send size={16} />
+        <input className="field" value={text} onChange={(e) => setText(e.target.value)} placeholder={t.typeHere} aria-label={t.typeHere} maxLength={500} />
+        <button className="btn send" disabled={state !== 'idle' || !text.trim()} aria-label={t.send}>
+          <ArrowUp size={18} strokeWidth={2.2} />
         </button>
       </form>
-      {err && <div className="err" style={{ marginTop: 8 }}>{err}</div>}
+      {err && <p className="err">{err}</p>}
 
       {turns.length < 2 && (
         <div className="examples">
-          <div className="muted small">{t.tryAsking}:</div>
-          <div className="chips">
+          <div className="overline">{t.tryAsking}</div>
+          <ul>
             {examples.map((ex) => (
-              <button key={ex} type="button" className="chip" onClick={() => ask(ex)} disabled={state !== 'idle'}>
-                “{ex}”
-              </button>
+              <li key={ex}>
+                <button type="button" className="example" onClick={() => ask(ex)} disabled={state !== 'idle'}>
+                  {ex}
+                </button>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       )}
 
-      <div className="chat">
+      <div className="chat" aria-live="polite">
         {turns.map((tu, i) => (
-          <div key={`${tu.conversation_id}-${i}`} style={{ display: 'grid', gap: 8 }}>
-            <div className="bubble-you">
-              {tu.via === 'voice' && <Mic size={13} style={{ marginRight: 6, verticalAlign: -2 }} />}
+          <div key={`${tu.conversation_id}-${i}`}>
+            <div className="q">
+              {tu.via === 'voice' && <Mic size={12} />}
               {tu.transcript}
             </div>
-            <div className={`bubble-bot ${tu.denials.length ? 'denied' : ''}`}>
-              {tu.reply}
-              {(tu.handoffs.length > 0 || tu.denials.length > 0) && (
-                <details style={{ marginTop: 6 }}>
-                  <summary className="muted small" style={{ cursor: 'pointer' }}>
-                    {t.whatIChecked} · {tu.extraction.source === 'sarvam_tool_call' ? 'Sarvam' : 'rules'}
-                  </summary>
-                  <ul className="steps">
-                    {tu.handoffs.map((h, j) => (
-                      <li key={j}>
-                        <Check size={14} style={{ flex: 'none', marginTop: 3 }} />
-                        <span>
-                          {STEP_WORDS[h.action] ?? h.action}
-                          {h.action !== 'evaluate_case' && h.action !== 'hold_outreach' ? ` — ${h.summary}` : ''}
-                        </span>
-                      </li>
-                    ))}
-                    {tu.denials.map((dn, j) => (
-                      <li key={`d${j}`} style={{ color: 'var(--check)' }}>
-                        <Ban size={14} style={{ flex: 'none', marginTop: 3 }} />
-                        <span>{dn.reason}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              )}
-            </div>
+            <div className={`a ${tu.denials.length ? 'denied' : ''}`}>{tu.reply}</div>
+            {(tu.handoffs.length > 0 || tu.denials.length > 0) && (
+              <details>
+                <summary>
+                  {t.whatIChecked} · {tu.extraction.source === 'sarvam_tool_call' ? 'Sarvam' : 'rules'}
+                </summary>
+                <ul className="steps">
+                  {tu.handoffs.map((h, j) => (
+                    <li key={j}>
+                      <Check size={13} style={{ flex: 'none', marginTop: 3 }} />
+                      <span>
+                        {STEP_WORDS[h.action] ?? h.action}
+                        {h.action !== 'evaluate_case' && h.action !== 'hold_outreach' ? `: ${h.summary}` : ''}
+                      </span>
+                    </li>
+                  ))}
+                  {tu.denials.map((dn, j) => (
+                    <li key={`d${j}`} style={{ color: 'var(--check)' }}>
+                      <Ban size={13} style={{ flex: 'none', marginTop: 3 }} />
+                      <span>{dn.reason}</span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
           </div>
         ))}
       </div>
