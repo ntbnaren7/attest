@@ -50,6 +50,19 @@ Panels, tabs, scenario, language and theme changes use short View Transitions (c
 It is honoured only for requests made on this machine (`localhost`, no proxy headers); through a tunnel or any
 other host the normal sign-in is required. It has light and dark modes.
 
+## Customer chat (instead of WhatsApp)
+
+WhatsApp is not used: the available Twilio account is a trial that only sends approved templates. Instead, the
+**Customer chat** view lets you chat as a customer, by text or by holding the mic for a voice note:
+- The voice layer from [DevSanjay09/voice-sarvam](https://github.com/DevSanjay09/voice-sarvam) (vendored in `voice/`)
+  transcribes the message and extracts what the customer said.
+- We match it to the account and record claims: paid, promise, deduction, hardship, do-not-call. A "paid" claim with a
+  reference triggers a Cashfree check, and the queue updates.
+- The reply comes from Sarvam (`sarvam-105b-conversations`) using only that account's verified facts: amount due,
+  due date, confirmed payments, the active payment link, the last few messages. It is written in the customer's
+  language, spoken back for voice notes, and blocked if it promises money movement or names an unverified amount.
+- It uses `SARVAM_VOICE_API_KEY` (a second key), with `SARVAM_API_KEY` as fallback. Our client also switches keys when one is rate-limited.
+
 ## Reconciliation (teammate's engine)
 
 The **Reconciliation** view (top bar: Collections | Reconciliation) runs the reconciliation and leakage engine from
@@ -89,7 +102,7 @@ Limits are adjustable with `RL_*_PER_MIN` environment variables. A limited reque
 ## Checks
 
 ```bash
-.venv/bin/pytest -q                                  # 66 tests: units, workflow, dashboard, security and reconciliation
+.venv/bin/pytest -q                                  # 77 tests: units, workflow, dashboard, security, reconciliation and customer chat
 .venv/bin/python scripts/demo_e2e.py                 # end-to-end run against the running server, writes evidence/e2e_*.json
 .venv/bin/python scripts/smoke_live.py               # live Cashfree / Sarvam / Relay smoke, writes evidence/smoke_*.json
 .venv/bin/python scripts/evaluate_ranking.py FILE.csv --outcome-col paid_within_7d --k 60   # ours vs file order
