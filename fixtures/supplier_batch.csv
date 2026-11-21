@@ -1,9 +1,9 @@
 party_code,invoice_no,party_name,mobile,language,invoice_amount,invoice_date,days_overdue,ontime_6m,missed_6m,payment_reference,remarks,approved_credit_note,credit_note_id
-B-501,INV-501A,Synthetic Traders A,9999999999,ta,"12,500",2026-10-15,37,4,2,,"paid 20000 by CFORD-B501, deducted 5000 for returned goods",,
-B-501,INV-501B,Synthetic Traders A,9999999999,ta,"12,500",2026-10-22,30,4,2,,,,
-B-502,INV-502,Synthetic Stores B,9999999998,hi,"18,000",2026-10-30,22,5,1,CFORD-B502,,,
-B-503,INV-503,Synthetic Hardware C,9999999997,en,7450.50,2026-11-01,20,5,1,,,,
-B-504,INV-504A,Synthetic Builders D,9999999990,hi,"10,000",2026-10-10,42,3,3,,"paid 10000 ref CFORD-B504",,
-B-504,INV-504B,Synthetic Builders D,9999999990,hi,"10,000",2026-10-12,40,3,3,,,,
-B-505,INV-505,Synthetic Electricals E,9999999999,ta,"12,500",2026-10-25,27,4,2,,,"2,000",CN-505
-B-506,INV-506,Synthetic Paints F,9999999998,hi,"5,000",2026-11-02,19,5,1,CFORD-B506,,,
+B-501,INV-501A,Sri Murugan Traders,9999999999,ta,"12,500",2026-10-15,37,4,2,,"paid 20000 by CFORD-B501, deducted 5000 for returned goods",,
+B-501,INV-501B,Sri Murugan Traders,9999999999,ta,"12,500",2026-10-22,30,4,2,,,,
+B-502,INV-502,Gupta Hardware Stores,9999999998,hi,"18,000",2026-10-30,22,5,1,CFORD-B502,,,
+B-503,INV-503,Coastal Builders Supply,9999999997,en,7450.50,2026-11-01,20,5,1,,,,
+B-504,INV-504A,Shree Ganesh Constructions,9999999990,hi,"10,000",2026-10-10,42,3,3,,"paid 10000 ref CFORD-B504",,
+B-504,INV-504B,Shree Ganesh Constructions,9999999990,hi,"10,000",2026-10-12,40,3,3,,,,
+B-505,INV-505,Velan Electricals,9999999999,ta,"12,500",2026-10-25,27,4,2,,,"2,000",CN-505
+B-506,INV-506,Rainbow Paints Depot,9999999998,hi,"5,000",2026-11-02,19,5,1,CFORD-B506,,,

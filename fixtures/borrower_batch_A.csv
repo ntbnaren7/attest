@@ -1,16 +1,16 @@
 loan_id,borrower_name,mobile,language,emi_amount,due_date,dpd,on_time_payments_6m,missed_payments_6m,broken_promises,payment_ref,field_notes,gender,religion,pincode
-L-1001,Synthetic Borrower One,9999999999,ta,"4,200",2026-11-10,11,5,1,0,,customer said reminder was missed; usually pays,F,X,600001
-L-1002,Synthetic Borrower Two,9999999998,hi,6500,2026-11-05,16,4,2,0,CFORD-L1002,,M,Y,110001
-L-1003,Synthetic Borrower Three,9999999997,hi,5100,2026-11-01,20,3,3,1,,branch mein de diya kal,F,Z,110002
-L-1004,Synthetic Borrower Four,9999999990,hi,7800,2026-11-03,18,4,2,0,,salary 5th ko aayega tab de dunga,M,X,560001
-L-1005,Synthetic Borrower Five,9999999999,ta,3900,2026-10-20,32,5,1,0,,husband in hospital - abhi nahi de sakta,F,Y,600002
-L-1006,Synthetic Borrower Six,9999999998,en,2750,2026-10-28,24,2,4,2,,asked us: don't call this number again,M,Z,400001
-L-1007,Synthetic Borrower Seven,9999999997,en,8000,2026-11-08,13,5,1,0,CFORD-L1007,,F,X,400002
-L-1008,Synthetic Borrower Eight,9999999990,ta,9000,2026-11-02,19,3,3,0,CFORD-L1008,,M,Y,600003
-L-1009,Synthetic Borrower Nine,9999999999,hi,4600,2026-10-25,27,2,4,1,,will pay on 2026-11-18,F,Z,110003
-L-1010,Synthetic Borrower Ten,9999999998,hi,5500,2026-11-12,9,4,2,0,,kal de dunga,M,X,110004
-L-1011,Synthetic Borrower Eleven,9999999997,en,12000,2026-07-20,124,0,6,3,,,F,Y,400003
-L-1012,Synthetic Borrower Twelve,9999999990,en,"3,300.50",2026-11-16,5,6,0,0,,,M,Z,400004
+L-1001,Kavitha Raman,9999999999,ta,"4,200",2026-11-10,11,5,1,0,,customer said reminder was missed; usually pays,F,X,600001
+L-1002,Rohan Mehta,9999999998,hi,6500,2026-11-05,16,4,2,0,CFORD-L1002,,M,Y,110001
+L-1003,Pooja Yadav,9999999997,hi,5100,2026-11-01,20,3,3,1,,branch mein de diya kal,F,Z,110002
+L-1004,Vikram Singh,9999999990,hi,7800,2026-11-03,18,4,2,0,,salary 5th ko aayega tab de dunga,M,X,560001
+L-1005,Selvi Murugan,9999999999,ta,3900,2026-10-20,32,5,1,0,,husband in hospital - abhi nahi de sakta,F,Y,600002
+L-1006,"Daniel D'Souza",9999999998,en,2750,2026-10-28,24,2,4,2,,asked us: don't call this number again,M,Z,400001
+L-1007,Farah Ali,9999999997,en,8000,2026-11-08,13,5,1,0,CFORD-L1007,,F,X,400002
+L-1008,Karthik Subramanian,9999999990,ta,9000,2026-11-02,19,3,3,0,CFORD-L1008,,M,Y,600003
+L-1009,Neha Gupta,9999999999,hi,4600,2026-10-25,27,2,4,1,,will pay on 2026-11-18,F,Z,110003
+L-1010,Amit Joshi,9999999998,hi,5500,2026-11-12,9,4,2,0,,kal de dunga,M,X,110004
+L-1011,Thomas Mathew,9999999997,en,12000,2026-07-20,124,0,6,3,,,F,Y,400003
+L-1012,Priya Nair,9999999990,en,"3,300.50",2026-11-16,5,6,0,0,,,M,Z,400004
 ,Missing Id Row,9999999999,en,4000,2026-11-10,11,3,3,0,,,F,X,600004
 L-1014,Bad Amount Row,9999999999,en,"12,50,0",2026-11-10,11,3,3,0,,,M,Y,600005
 L-1015,Negative Amount Row,9999999999,en,-500,2026-11-10,11,3,3,0,,,F,Z,600006
