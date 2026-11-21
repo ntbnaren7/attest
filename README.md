@@ -23,10 +23,25 @@ cp .env.example .env          # add sandbox keys if you have them; everything ru
 
 Python 3.12, FastAPI, SQLite (single file at `data/receivables.db`), no other services. Delete `data/` for a clean start.
 
+### Dashboard
+
+The operator dashboard is a React + TypeScript app in `web/` (Vite). Build it once and the backend serves it at `/`:
+
+```bash
+cd web && npm ci && npm run build && cd ..     # writes web/dist (git-ignored)
+```
+
+Without a build, `/` falls back to the original console, which stays available at `/classic`. For UI work, run
+`npm run dev` in `web/` (it proxies `/api` to the backend on port 8000).
+
+The dashboard groups people into **Call now · Wait · Check first · Done**. Each row has one plain-language reason,
+and the whole interface switches between English, हिंदी and தமிழ். A **Hear why** button reads a case's reason aloud
+through Sarvam TTS. It has light and dark modes.
+
 ## Checks
 
 ```bash
-.venv/bin/pytest -q                                  # 44 tests: units + full workflow through the HTTP API
+.venv/bin/pytest -q                                  # 47 tests: units, full workflow and dashboard endpoints
 .venv/bin/python scripts/demo_e2e.py                 # end-to-end run against the running server, writes evidence/e2e_*.json
 .venv/bin/python scripts/smoke_live.py               # live Cashfree / Sarvam / Relay smoke, writes evidence/smoke_*.json
 .venv/bin/python scripts/evaluate_ranking.py FILE.csv --outcome-col paid_within_7d --k 60   # ours vs file order
