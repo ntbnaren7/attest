@@ -4,6 +4,7 @@ import { api, ApiError, type Approval } from '../api'
 import { errText } from '../errors'
 import { inr } from '../format'
 import { usePrefs } from '../prefs'
+import { useExit } from '../motion'
 import { HelpButton } from './HelpButton'
 
 /** The only place a money-moving action is authorized. Voice never reaches this. */
@@ -15,6 +16,7 @@ export function ApproveDialog({ approval, name, reason, onClose, onDone }: {
   onDone: () => void
 }) {
   const { t } = usePrefs()
+  const [closing, close] = useExit(onClose)
   const [checked, setChecked] = useState(false)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<{ title: string; detail: string } | null>(null)
@@ -38,15 +40,15 @@ export function ApproveDialog({ approval, name, reason, onClose, onDone }: {
 
   return (
     <div className="dialog-wrap">
-      <div className="overlay" onClick={onClose} />
-      <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="approve-title">
+      <div className={`overlay ${closing ? 'closing' : ''}`} onClick={close} />
+      <div className={`dialog ${closing ? 'closing' : ''}`} role="dialog" aria-modal="true" aria-labelledby="approve-title">
         {done ? (
           <>
             <div className="success">
               <CheckCircle2 size={22} /> {t.sent}
             </div>
             <div className="footer">
-              <button className="btn" onClick={onClose}>
+              <button className="btn" onClick={close}>
                 {t.close}
               </button>
             </div>
@@ -89,7 +91,7 @@ export function ApproveDialog({ approval, name, reason, onClose, onDone }: {
             <div className="footer">
               <HelpButton topic="approve" label={t.approveSend} />
               <span className="spacer" />
-              <button className="btn secondary" onClick={onClose}>
+              <button className="btn secondary" onClick={close}>
                 {t.cancel}
               </button>
               <button className="btn" onClick={go} disabled={!checked || busy}>

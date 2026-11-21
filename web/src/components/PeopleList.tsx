@@ -26,6 +26,7 @@ export function PeopleList({ q, filter, setFilter, flash, onOpen }: {
             {g && <Dot d={g} />}
             {g ? groupLabel(t, g) : t.all}
             <span className="count">{g ? q?.counts[g] ?? 0 : rows.length}</span>
+            {filter === g && <span className="indicator" aria-hidden="true" />}
           </button>
         ))}
       </div>
@@ -43,7 +44,7 @@ export function PeopleList({ q, filter, setFilter, flash, onOpen }: {
       </div>
 
       {shown.length === 0 && <div className="empty">{rows.length ? t.empty : t.emptyStart}</div>}
-      <ul className="rows">
+      <ul className="rows" key={filter ?? 'all'}>
         {shown.map((r) => {
           const late = r.decision === 'CONTACT' && !r.contact_allowed_now
           return (

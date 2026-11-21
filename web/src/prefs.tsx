@@ -1,6 +1,7 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useLayoutEffect, useState, type ReactNode } from 'react'
 import type { Lang } from './api'
 import { DICTS } from './i18n'
+import { transition } from './motion'
 
 type Theme = 'light' | 'dark'
 
@@ -37,7 +38,8 @@ export function PrefsProvider({ children }: { children: ReactNode }) {
     if (saved) return saved
     return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   })
-  useEffect(() => {
+  // Layout effect so the new theme is painted inside the same view-transition snapshot.
+  useLayoutEffect(() => {
     document.documentElement.dataset.theme = theme
   }, [theme])
   useEffect(() => {
@@ -46,16 +48,18 @@ export function PrefsProvider({ children }: { children: ReactNode }) {
   const value: Prefs = {
     lang,
     setLang: (l) => {
-      setLangState(l)
+      transition(() => setLangState(l))
       write('ui.lang', l)
     },
     theme,
     toggleTheme: () =>
-      setTheme((x) => {
-        const n = x === 'light' ? 'dark' : 'light'
-        write('ui.theme', n)
-        return n
-      }),
+      transition(() =>
+        setTheme((x) => {
+          const n = x === 'light' ? 'dark' : 'light'
+          write('ui.theme', n)
+          return n
+        }),
+      ),
     t: DICTS[lang],
   }
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>

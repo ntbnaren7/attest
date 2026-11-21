@@ -6,6 +6,7 @@ import { ago, inr, time } from '../format'
 import { type Key } from '../i18n'
 import { usePrefs } from '../prefs'
 import { HelpButton } from './HelpButton'
+import { useExit } from '../motion'
 import { Status } from './Status'
 
 const CLAIM_WORDS: Record<string, string> = {
@@ -65,6 +66,7 @@ export function CaseDrawer({ id, onClose, onChanged, onApprove }: {
   const [busy, setBusy] = useState<string | null>(null)
   const [err, setErr] = useState('')
   const panel = useRef<HTMLElement>(null)
+  const [closing, close] = useExit(onClose)
 
   const load = useCallback(async () => {
     const [detail, ex] = await Promise.all([
@@ -83,10 +85,10 @@ export function CaseDrawer({ id, onClose, onChanged, onApprove }: {
 
   useEffect(() => {
     panel.current?.focus() // move focus into the dialog without drawing a ring on a button
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close()
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  }, [close])
 
   async function hear() {
     setBusy('hear')
@@ -132,11 +134,11 @@ export function CaseDrawer({ id, onClose, onChanged, onApprove }: {
 
   const shell = (body: React.ReactNode) => (
     <>
-      <div className="overlay" onClick={onClose} />
-      <aside ref={panel} tabIndex={-1} className="drawer" role="dialog" aria-modal="true" aria-label={c?.account.display_name ?? ''}>
+      <div className={`overlay ${closing ? 'closing' : ''}`} onClick={close} />
+      <aside ref={panel} tabIndex={-1} className={`drawer ${closing ? 'closing' : ''}`} role="dialog" aria-modal="true" aria-label={c?.account.display_name ?? ''}>
         <div className="drawer-top">
           <span>{c && <Status d={c.decision.decision} />}</span>
-          <button className="icon-btn" onClick={onClose} aria-label={t.close}>
+          <button className="icon-btn" onClick={close} aria-label={t.close}>
             <X size={18} strokeWidth={1.8} />
           </button>
         </div>

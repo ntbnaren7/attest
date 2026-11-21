@@ -3,9 +3,11 @@ import { CheckCircle2, FileUp, Loader2 } from 'lucide-react'
 import { api, type ImportReport } from '../api'
 import { errText } from '../errors'
 import { usePrefs } from '../prefs'
+import { useExit } from '../motion'
 
 export function ImportDialog({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
   const { t } = usePrefs()
+  const [closing, close] = useExit(onClose)
   const input = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
   const [rep, setRep] = useState<ImportReport | null>(null)
@@ -28,8 +30,8 @@ export function ImportDialog({ onClose, onDone }: { onClose: () => void; onDone:
 
   return (
     <div className="dialog-wrap">
-      <div className="overlay" onClick={onClose} />
-      <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="import-title">
+      <div className={`overlay ${closing ? 'closing' : ''}`} onClick={close} />
+      <div className={`dialog ${closing ? 'closing' : ''}`} role="dialog" aria-modal="true" aria-labelledby="import-title">
         <h2 id="import-title">{t.addList}</h2>
         <p className="intro">{t.addListHint}</p>
         {!rep && (
@@ -85,7 +87,7 @@ export function ImportDialog({ onClose, onDone }: { onClose: () => void; onDone:
           </div>
         )}
         <div className="footer">
-          <button className="btn secondary" onClick={onClose}>
+          <button className="btn secondary" onClick={close}>
             {t.close}
           </button>
         </div>
