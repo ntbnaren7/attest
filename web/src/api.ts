@@ -203,6 +203,14 @@ export const api = {
   reconRun: () => call<ReconView>('/api/recon/run', { method: 'POST' }),
   reconApprove: (thread_id: string, decisions: Record<string, boolean>) =>
     call<ReconView>('/api/recon/approve', { method: 'POST', body: JSON.stringify({ thread_id, decisions }) }),
+  inboxThread: (accountId: string) => call<ChatThread>(`/api/inbox/thread/${encodeURIComponent(accountId)}`),
+  inboxSend: (accountId: string, text: string | null, audio: Blob | null) => {
+    const fd = new FormData()
+    fd.append('account_id', accountId)
+    if (text) fd.append('text', text)
+    if (audio) fd.append('audio', audio, audio.type.includes('mp4') ? 'voice_note.m4a' : 'voice_note.webm')
+    return call<ChatResult>('/api/inbox/message', { method: 'POST', body: fd })
+  },
   help: (topic: string, lang: Lang) => call<{ text: string; audio_b64: string | null }>(`/api/help/${encodeURIComponent(topic)}?lang=${lang}`),
 }
 
@@ -264,4 +272,30 @@ export interface ReconView {
   pending: ReconPending[]
   results: { id: string; status: string; plan: Record<string, unknown> }[]
   kpi: { findings: number; critical: number; high: number; at_risk: number; approvals: number }
+}
+
+export interface ChatMessage {
+  ts: string
+  via: 'text' | 'voice' | null
+  text: string | null
+  reply: string | null
+  reply_source: string | null
+  claims: string[]
+  status: string | null
+  language: string | null
+}
+export interface ChatThread {
+  facts: { customer_name: string | null; account: string; amount_due: string; due_dates: string[]; account_status: string;
+    payment_link: { url: string; amount: string } | null }
+  messages: ChatMessage[]
+}
+export interface ChatResult {
+  transcript: string
+  language: string
+  reply: string | null
+  reply_source: string
+  reply_audio_b64?: string | null
+  claims: { kind: string }[]
+  decision?: { code: string; reason: string }
+  note?: string
 }

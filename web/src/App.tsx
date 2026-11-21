@@ -15,6 +15,7 @@ import { Ledger } from './components/Summary'
 import { TopBar } from './components/TopBar'
 import { LivePanel } from './components/LivePanel'
 import { ReconView } from './components/ReconView'
+import { CustomerChat } from './components/CustomerChat'
 
 type Pending = { approval: Approval; name: string; reason: string }
 
@@ -27,7 +28,7 @@ export default function App() {
   const [approve, setApprove] = useState<Pending | null>(null)
   const [importing, setImporting] = useState(false)
   const [liveOpen, setLiveOpen] = useState(false)
-  const [view, setView] = useState<'queue' | 'recon'>('queue')
+  const [view, setView] = useState<'queue' | 'chat' | 'recon'>('queue')
   const [feed, setFeed] = useState<QueueChange[]>([])
   const [flash, setFlash] = useState<Set<string>>(new Set())
 
@@ -116,6 +117,8 @@ export default function App() {
       <main className="page fade" key={`${view}-${me.operator.username}`}>
         {view === 'recon' ? (
           <ReconView />
+        ) : view === 'chat' ? (
+          <CustomerChat q={q} onChanged={refresh} />
         ) : (
         <>
         <div className="page-head">
