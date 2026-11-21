@@ -1,8 +1,44 @@
+# --- secrets and local config: never commit ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.crt
+credentials*.json
+secrets*.json
+.claude/settings.local.json
+.mcp.json
+ngrok.yml
+
+# --- local data (SQLite database holds tenant records, sessions, approval tokens) ---
+data/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+evidence/raw/
+
+# --- Python ---
 .venv/
+venv/
 __pycache__/
 *.pyc
-.env
-data/
 .pytest_cache/
-evidence/raw/
+.coverage
+htmlcov/
+
+# --- dashboard (web/) build output and dependencies ---
+node_modules/
+web/dist/
+*.tsbuildinfo
+.vite/
+
+# --- logs and OS/editor noise ---
+*.log
+npm-debug.log*
 .DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
