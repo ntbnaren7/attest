@@ -60,6 +60,17 @@ def login(db: DB, username: str, password: str) -> str | None:
     return token
 
 
+def session_for(db: DB, username: str) -> str | None:
+    """Issue a session for a known operator without a password. Only callable from the local demo route."""
+    row = db.one("SELECT id FROM operators WHERE username=?", (username,))
+    if not row:
+        return None
+    token = secrets.token_urlsafe(32)
+    db.x("INSERT INTO sessions (token_hash, operator_id, created_at, expires_at) VALUES (?,?,?,?)",
+         (sha256(token), row["id"], iso(), iso(now() + timedelta(hours=SESSION_HOURS))))
+    return token
+
+
 def logout(db: DB, token: str) -> None:
     db.x("DELETE FROM sessions WHERE token_hash=?", (sha256(token),))
 

@@ -110,3 +110,18 @@ def test_help_speaks_only_fixed_topics(meena):
     assert r.status_code == 200 and "கட்டண இணைப்பை" in r.json()["text"]
     assert meena.get("/api/help/../../etc/passwd").status_code == 404
     assert meena.get("/api/help/anything-else").status_code == 404
+
+
+def test_demo_session_only_locally_and_only_when_enabled(app, monkeypatch):
+    c = TestClient(app)
+    monkeypatch.delenv("DEMO_MODE", raising=False)
+    assert c.post("/api/demo/session", json={"persona": "meena"}).status_code == 403
+    monkeypatch.setenv("DEMO_MODE", "1")
+    # Through a proxy/tunnel (forwarded headers) it is refused even when enabled.
+    r = c.post("/api/demo/session", json={"persona": "meena"}, headers={"X-Forwarded-For": "203.0.113.9"})
+    assert r.status_code == 403
+    assert c.get("/api/demo", headers={"X-Forwarded-For": "203.0.113.9"}).json()["enabled"] is False
+    # Locally it signs in as the chosen scenario's operator, and unknown personas are rejected.
+    assert c.post("/api/demo/session", json={"persona": "root"}).status_code == 400
+    assert c.post("/api/demo/session", json={"persona": "arun"}).status_code == 200
+    assert c.get("/api/me").json()["operator"]["username"] == "arun"

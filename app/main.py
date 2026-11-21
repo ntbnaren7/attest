@@ -107,9 +107,45 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
         resp.delete_cookie(COOKIE)
         return resp
 
+    # ---------------------------------------------------------------- demo scenarios (no login screen)
+    DEMO_PERSONAS = {
+        "meena": {"label": "Loan book", "detail": "Problem 2 · borrower book"},
+        "arun": {"label": "Supplier invoices", "detail": "B2B supplier adaptation"},
+    }
+
+    def _demo_allowed(request: Request) -> bool:
+        """Demo sign-in only on this machine: DEMO_MODE=1, a loopback peer, no proxy hop, and a localhost Host header."""
+        if os.environ.get("DEMO_MODE") != "1":
+            return False
+        peer = request.client.host if request.client else ""
+        host = (request.headers.get("host") or "").split(":")[0]
+        forwarded = any(request.headers.get(h) for h in ("x-forwarded-for", "x-forwarded-host", "forwarded", "x-real-ip"))
+        return peer in ("127.0.0.1", "::1", "testclient") and host in ("localhost", "127.0.0.1", "testserver") and not forwarded
+
+    @app.get("/api/demo")
+    def demo_info(request: Request):
+        ok = _demo_allowed(request)
+        return {"enabled": ok, "personas": DEMO_PERSONAS if ok else {}}
+
+    @app.post("/api/demo/session")
+    async def demo_session(request: Request):
+        if not _demo_allowed(request):
+            raise HTTPException(403, "Demo sign-in is only available on this machine with DEMO_MODE=1.")
+        sec.limit("login", client_ip(request))
+        persona = str((await request.json()).get("persona", "meena"))
+        if persona not in DEMO_PERSONAS:
+            raise HTTPException(400, "unknown scenario")
+        token = auth.session_for(ctx.db, persona)
+        if not token:
+            raise HTTPException(404, "scenario user missing")
+        resp = JSONResponse({"ok": True, "persona": persona})
+        resp.set_cookie(COOKIE, token, httponly=True, samesite="strict", max_age=12 * 3600)
+        return resp
+
     @app.get("/api/me")
-    def me(op: auth.Operator = Depends(operator)):
+    def me(request: Request, op: auth.Operator = Depends(operator)):
         return {"operator": op.__dict__, "integrations": ctx.integration_status(op.merchant_id),
+                "demo": _demo_allowed(request), "personas": DEMO_PERSONAS if _demo_allowed(request) else {},
                 "test_recipients": list(ctx.settings.test_recipients)}
 
     # ---------------------------------------------------------------- import + queue
