@@ -8,7 +8,8 @@ import { useExit } from '../motion'
 import { HelpButton } from './HelpButton'
 
 /** The only place a money-moving action is authorized. Voice never reaches this. */
-export function ApproveDialog({ approval, name, reason, onClose, onDone }: {
+export function ApproveDialog({ approval, name, reason, onClose, onDone, openCheckout = false }: {
+  openCheckout?: boolean
   approval: Approval
   name: string
   reason: string
@@ -21,16 +22,33 @@ export function ApproveDialog({ approval, name, reason, onClose, onDone }: {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<{ title: string; detail: string } | null>(null)
   const [done, setDone] = useState(false)
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null)
 
   async function go() {
     setBusy(true)
     setErr(null)
+    // Open the tab inside the click so the browser allows it; point it at Cashfree once the link exists.
+    const tab = openCheckout ? window.open('', '_blank') : null
+    if (tab) {
+      tab.document.title = 'Preparing payment link…'
+      tab.document.body.style.cssText = 'font: 16px -apple-system, system-ui, sans-serif; display:grid; place-items:center; height:100vh; margin:0; color:#6e6e73'
+      tab.document.body.textContent = 'Preparing your Cashfree payment link…'
+    }
     try {
       const { token } = await api.approve(approval)
-      await api.execute(approval.id, token)
+      const res = await api.execute(approval.id, token)
+      const url = res.link?.provenance === 'cashfree_sandbox' ? res.link.link_url : null
+      if (tab && url) {
+        tab.location.href = url
+        setCheckoutUrl(url)
+      } else {
+        tab?.close()
+        if (url) setCheckoutUrl(url)
+      }
       setDone(true)
       onDone()
     } catch (e) {
+      tab?.close()
       const ae = e instanceof ApiError ? e : null
       setErr({ title: ae?.code === 'STALE_APPROVAL' ? t.staleTitle : errText(e, t), detail: ae?.code === 'STALE_APPROVAL' ? ae.message : '' })
     } finally {
@@ -47,6 +65,14 @@ export function ApproveDialog({ approval, name, reason, onClose, onDone }: {
             <div className="success">
               <CheckCircle2 size={22} /> {t.sent}
             </div>
+            {checkoutUrl && (
+              <p className="intro" style={{ marginTop: 10 }}>
+                {t.checkoutOpened}{' '}
+                <a href={checkoutUrl} target="_blank" rel="noopener noreferrer">
+                  {t.openCheckout}
+                </a>
+              </p>
+            )}
             <div className="footer">
               <button className="btn" onClick={close}>
                 {t.close}

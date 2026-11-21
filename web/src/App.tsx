@@ -154,7 +154,14 @@ export default function App() {
       )}
       {open && <CaseDrawer id={open} onClose={() => setOpen(null)} onChanged={refresh} onApprove={openApproval} />}
       {approve && (
-        <ApproveDialog approval={approve.approval} name={approve.name} reason={approve.reason} onClose={() => setApprove(null)} onDone={refresh} />
+        <ApproveDialog
+          approval={approve.approval}
+          name={approve.name}
+          reason={approve.reason}
+          openCheckout={me.integrations.cashfree.mode === 'cashfree_sandbox'}
+          onClose={() => setApprove(null)}
+          onDone={refresh}
+        />
       )}
       {importing && <ImportDialog onClose={() => setImporting(false)} onDone={refresh} />}
     </>

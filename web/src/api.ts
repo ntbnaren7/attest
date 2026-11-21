@@ -176,7 +176,8 @@ export const api = {
       headers: SCREEN,
       body: JSON.stringify({ confirm: { account_id: a.account_id, action: a.action, amount_paise: a.amount_paise, account_version: a.account_version, recipient: a.recipient } }),
     }),
-  execute: (id: string, token: string) => call(`/api/approvals/${id}/execute`, { method: 'POST', headers: SCREEN, body: JSON.stringify({ token }) }),
+  execute: (id: string, token: string) =>
+    call<{ status: string; link?: { link_url: string | null; provenance: string } }>(`/api/approvals/${id}/execute`, { method: 'POST', headers: SCREEN, body: JSON.stringify({ token }) }),
   simulatePay: (link_id: string, amount_inr?: string) => call('/api/sim/pay', { method: 'POST', body: JSON.stringify({ link_id, amount_inr }) }),
   importFile: (file: File) => {
     const fd = new FormData()
