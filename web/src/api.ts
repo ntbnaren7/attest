@@ -194,5 +194,39 @@ export const api = {
     return call<Turn>('/api/coordinator/voice', { method: 'POST', body: fd })
   },
   changes: () => call<TraceRow[]>('/api/trace'),
+  liveStatus: () => call<LiveStatus>('/api/live/status'),
+  liveSample: (which: string) => call<ImportReport & { queue?: Record<Decision, number> }>(`/api/live/sample/${which}`, { method: 'POST' }),
+  livePoll: () => call<{ checked: number; at: string }>('/api/live/poll', { method: 'POST' }),
+  liveCheck: (relay: boolean) => call<LiveCheck>('/api/live/check', { method: 'POST', body: JSON.stringify({ relay }) }),
   help: (topic: string, lang: Lang) => call<{ text: string; audio_b64: string | null }>(`/api/help/${encodeURIComponent(topic)}?lang=${lang}`),
 }
+
+export interface LiveLink {
+  link_id: string
+  status: string
+  amount_paise: number
+  amount_paid_paise: number
+  link_url: string | null
+  provenance: string
+  created_at: string
+  last_checked_at: string | null
+  external_ref: string
+  display_name: string | null
+  account_id: string
+  caught_by: string | null
+}
+export interface LiveStatus {
+  now: string
+  cashfree: { mode: string; api_version: string; label: string }
+  sarvam: { live: boolean; models: string[]; calls_today: number; daily_budget: number }
+  relay: { mode: string }
+  webhooks: { public_url: string | null; received: number; rejected: number }
+  watcher: { poll_every_s: number; last_poll_at: string | null; last_poll_checked: number | null }
+  links: LiveLink[]
+  webhook_events: { received_at: string; signature_ok: number; event_type: string | null; link_id: string | null; outcome: string | null }[]
+  receipts: { provider_payment_id: string; amount_paise: number; verified_at: string; provenance: string; link_id: string | null; external_ref: string }[]
+  samples: Record<string, string>
+  test_upi: string
+}
+export interface CheckResult { ok: boolean | null; detail: string; ms?: number }
+export interface LiveCheck { cashfree: CheckResult; sarvam: CheckResult; relay: CheckResult; at: string }

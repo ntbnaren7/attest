@@ -17,7 +17,7 @@ export function LangSelect() {
   )
 }
 
-export function TopBar({ me, onSwitch, onSignOut }: { me: Me; onSwitch: (persona: string) => void; onSignOut: () => void }) {
+export function TopBar({ me, onSwitch, onSignOut, onLive }: { me: Me; onSwitch: (persona: string) => void; onSignOut: () => void; onLive: () => void }) {
   const { t, theme, toggleTheme } = usePrefs()
   const ig = me.integrations
   const states = [
@@ -49,6 +49,10 @@ export function TopBar({ me, onSwitch, onSignOut }: { me: Me; onSwitch: (persona
         )}
 
         <span className="spacer" />
+
+        <button className="live-btn" onClick={onLive} title="Run the live demo: checks, payment and watcher">
+          <span className="dot pulse-dot" aria-hidden="true" /> Live test
+        </button>
 
         <span className="systems" title={states.map((x) => `${x.name}: ${word(x.s)}`).join(' · ')}>
           <span className="dots">

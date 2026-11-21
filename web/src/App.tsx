@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Upload } from 'lucide-react'
 import { api, ApiError, type Approval, type Decision, type Me, type Queue, type QueueChange } from './api'
 import { usePrefs } from './prefs'
+import { transition } from './motion'
 import { ApproveDialog } from './components/ApproveDialog'
 import { Assistant } from './components/Assistant'
 import { CaseDrawer } from './components/CaseDrawer'
@@ -12,6 +13,7 @@ import { Login } from './components/Login'
 import { PeopleList } from './components/PeopleList'
 import { Ledger } from './components/Summary'
 import { TopBar } from './components/TopBar'
+import { LivePanel } from './components/LivePanel'
 
 type Pending = { approval: Approval; name: string; reason: string }
 
@@ -23,6 +25,7 @@ export default function App() {
   const [open, setOpen] = useState<string | null>(null)
   const [approve, setApprove] = useState<Pending | null>(null)
   const [importing, setImporting] = useState(false)
+  const [liveOpen, setLiveOpen] = useState(false)
   const [feed, setFeed] = useState<QueueChange[]>([])
   const [flash, setFlash] = useState<Set<string>>(new Set())
 
@@ -78,11 +81,14 @@ export default function App() {
   async function switchTo(persona: string) {
     if (me && me !== 'anon' && me.operator.username === persona) return
     await api.demoSession(persona)
-    setQ(null)
-    setOpen(null)
-    setFilter(null)
-    setFeed([])
-    setMe(await api.me())
+    const [nextMe, nextQ] = await Promise.all([api.me(), api.queue(lang)])
+    transition(() => {
+      setOpen(null)
+      setFilter(null)
+      setFeed([])
+      setQ(nextQ)
+      setMe(nextMe)
+    })
   }
 
   if (me === null) return null
@@ -96,6 +102,7 @@ export default function App() {
       <TopBar
         me={me}
         onSwitch={switchTo}
+        onLive={() => setLiveOpen(true)}
         onSignOut={async () => {
           await api.logout().catch(() => {})
           setMe('anon')
@@ -119,7 +126,7 @@ export default function App() {
         {q && <Ledger q={q} />}
 
         <div className="main">
-          <PeopleList q={q} filter={filter} setFilter={setFilter} flash={flash} onOpen={setOpen} />
+          <PeopleList q={q} filter={filter} setFilter={(f) => transition(() => setFilter(f))} flash={flash} onOpen={setOpen} />
           <aside className="side">
             <Assistant
               voiceOn={me.integrations.sarvam.mode === 'live'}
@@ -133,6 +140,18 @@ export default function App() {
         </div>
       </main>
 
+      {liveOpen && (
+        <LivePanel
+          q={q}
+          onClose={() => setLiveOpen(false)}
+          onApprove={openApproval}
+          onChanged={refresh}
+          onOpen={(id) => {
+            setLiveOpen(false)
+            setOpen(id)
+          }}
+        />
+      )}
       {open && <CaseDrawer id={open} onClose={() => setOpen(null)} onChanged={refresh} onApprove={openApproval} />}
       {approve && (
         <ApproveDialog approval={approve.approval} name={approve.name} reason={approve.reason} onClose={() => setApprove(null)} onDone={refresh} />
