@@ -41,7 +41,7 @@ export function TopBar({ me, onSwitch, onSignOut, onLive, view, onView }: {
       <div className="topbar-inner">
         <div className="wordmark">
           <Mark />
-          <span className="name">Invariant</span>
+          <span className="name">Attest</span>
         </div>
 
         <nav className="nav" aria-label="Views">

@@ -2,7 +2,7 @@ import type { Decision, Lang } from './api'
 
 // Short, concrete words. One idea per label. Reasons themselves come from the server in the chosen language.
 const en = {
-  appName: 'Invariant',
+  appName: 'Attest',
   today: 'Who to contact today',
   signIn: 'Sign in',
   username: 'Username',
@@ -226,7 +226,7 @@ const en = {
 type Dict = typeof en
 
 const hi: Dict = {
-  appName: 'Invariant',
+  appName: 'Attest',
   today: 'आज किससे संपर्क करें',
   signIn: 'साइन इन',
   username: 'यूज़रनेम',
@@ -448,7 +448,7 @@ const hi: Dict = {
 }
 
 const ta: Dict = {
-  appName: 'Invariant',
+  appName: 'Attest',
   today: 'இன்று யாரைத் தொடர்பு கொள்வது',
   signIn: 'உள்நுழை',
   username: 'பயனர் பெயர்',
@@ -670,7 +670,7 @@ const ta: Dict = {
 }
 
 const kn: Dict = {
-  appName: 'Invariant',
+  appName: 'Attest',
   today: 'ಇಂದು ಯಾರನ್ನು ಸಂಪರ್ಕಿಸಬೇಕು',
   signIn: 'ಸೈನ್ ಇನ್',
   username: 'ಬಳಕೆದಾರ ಹೆಸರು',

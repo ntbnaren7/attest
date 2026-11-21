@@ -30,7 +30,7 @@ export function Login({ onDone }: { onDone: () => void }) {
     <div className="login">
       <form onSubmit={submit}>
         <div className="wordmark" style={{ fontSize: 20 }}>
-          <Mark size={24} /> Invariant
+          <Mark size={24} /> Attest
         </div>
         <p className="muted" style={{ margin: 0 }}>{t.signInHint}</p>
         <label>

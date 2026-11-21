@@ -1,6 +1,6 @@
-# Invariant
+# Attest
 
-**A collections and payments desk that only believes verified money.**
+**Payments, proven.** A collections and payments desk that only believes verified money.
 Built for the **Sarvam × Cashfree Buildathon** (Problem 2: *Who will pay first?*, plus a merchant/supplier mode).
 
 ---
@@ -11,7 +11,7 @@ Built for the **Sarvam × Cashfree Buildathon** (Problem 2: *Who will pay first?
 - Lenders chase people who have already paid, call people in hardship, and work from stale lists.
 - Notes, promises and receipts live in diaries, chats and photos, not in the system.
 
-## How Invariant solves it
+## How Attest solves it
 
 - **Claims are not facts.** "I paid", a screenshot or a diary note is recorded as a *claim*. Only money verified by Cashfree changes a balance.
 - **The queue ranks who will pay if asked**, with a plain reason on every row: Call now · Wait · Check first · Done.

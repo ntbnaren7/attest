@@ -1,7 +1,7 @@
 @import '@fontsource-variable/inter';
 
 /*
-  Invariant: type-led, quiet, exact.
+  Attest: type-led, quiet, exact.
   SF Pro is used through the system font stack (Apple devices render SF Pro Text/Display natively;
   the font files cannot be bundled under Apple's licence). Other platforms fall back to Inter.
 */
