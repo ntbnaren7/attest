@@ -53,7 +53,17 @@ def build_queue(ctx: Ctx, merchant_id: str, batch_id: str | None = None, record_
                      " computed_at=excluded.computed_at",
                      (r["account_id"], merchant_id, r["decision"], r["rank"], r["collectible_paise"], r["reason"], iso()))
     counts = {k: sum(1 for r in rows if r["decision"] == k) for k in ORDER}
-    return {"rows": rows, "counts": counts, "changes": changes, "computed_at": iso()}
+    ids = [r["account_id"] for r in rows]
+    received = 0
+    if ids:
+        marks = ",".join("?" * len(ids))
+        received = db.one(f"SELECT COALESCE(SUM(amount_paise),0) AS s FROM receipts WHERE merchant_id=? AND account_id IN ({marks})",
+                          (merchant_id, *ids))["s"]
+    totals = {"outstanding_paise": sum(r["outstanding_paise"] for r in rows),
+              "collectible_now_paise": sum(r["collectible_paise"] for r in rows if r["decision"] == "CONTACT"),
+              "received_paise": received,
+              "on_hold_paise": sum(r["outstanding_paise"] for r in rows if r["decision"] in ("HOLD", "REVIEW"))}
+    return {"rows": rows, "counts": counts, "totals": totals, "changes": changes, "computed_at": iso()}
 
 
 def reconcile_once(ctx: Ctx) -> int:

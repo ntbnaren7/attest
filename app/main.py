@@ -112,8 +112,35 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
                           "WHERE merchant_id=? ORDER BY imported_at DESC", (op.merchant_id,))
 
     @app.get("/api/queue")
-    def queue(batch_id: str | None = None, op: auth.Operator = Depends(operator)):
-        return build_queue(ctx, op.merchant_id, batch_id or None)
+    def queue(batch_id: str | None = None, lang: str | None = None, op: auth.Operator = Depends(operator)):
+        q = build_queue(ctx, op.merchant_id, batch_id or None)
+        for r in q["rows"]:
+            r["reason_local"] = _reason_local(r, lang)
+        return q
+
+    def _reason_local(r: dict, lang: str | None) -> str:
+        if lang not in ("hi-IN", "ta-IN"):
+            return r["reason"]
+        from .policy import Decision
+        d = Decision(**{k: r[k] for k in Decision.__dataclass_fields__})
+        return coordinator.explain(lang, r["external_ref"], d)
+
+    @app.get("/api/cases/{case_id}/explain")
+    def explain_case(case_id: str, lang: str = "en-IN", op: auth.Operator = Depends(operator)):
+        """Plain-language reason for one case, optionally spoken (Sarvam TTS) for people who prefer listening."""
+        acct = ctx.db.one("SELECT external_ref FROM accounts WHERE id=? AND merchant_id=?", (case_id, op.merchant_id))
+        if not acct:
+            raise HTTPException(404, "not found")
+        lang = lang if lang in ("hi-IN", "ta-IN", "en-IN") else "en-IN"
+        d = evaluate(ctx, op.merchant_id, case_id)
+        text = coordinator.explain(lang, acct["external_ref"], d)
+        out = {"text": text, "language": lang, "audio_b64": None}
+        if ctx.sarvam:
+            try:
+                out["audio_b64"] = ctx.sarvam.tts(text, lang)["audio_b64"]
+            except SarvamError as e:
+                out["tts_error"] = str(e)[:200]
+        return out
 
     @app.get("/api/cases/{case_id}")
     def case(case_id: str, op: auth.Operator = Depends(operator)):
@@ -265,10 +292,24 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
 
     # ---------------------------------------------------------------- UI
     app.mount("/static", StaticFiles(directory=str(ROOT / "static")), name="static")
+    dist = ROOT / "web" / "dist"
+    if (dist / "assets").exists():
+        app.mount("/assets", StaticFiles(directory=str(dist / "assets")), name="assets")
+
+    @app.get("/favicon.svg")
+    def favicon():
+        f = dist / "favicon.svg"
+        return FileResponse(str(f)) if f.exists() else Response(status_code=404)
+
+    @app.get("/classic")
+    def classic():
+        return FileResponse(str(ROOT / "static" / "index.html"))
 
     @app.get("/")
     def index():
-        return FileResponse(str(ROOT / "static" / "index.html"))
+        # The dashboard build (web/dist) when present; the classic console otherwise.
+        built = dist / "index.html"
+        return FileResponse(str(built if built.exists() else ROOT / "static" / "index.html"))
 
     return app
 
