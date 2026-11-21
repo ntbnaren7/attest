@@ -3,3 +3,11 @@ uvicorn==0.54.0
 httpx==0.28.1
 python-multipart==0.0.34
 pytest==9.2.0
+# reconciliation engine (recon/, vendored from the teammate repo)
+cryptography==50.0.2
+langchain-core==0.3.86
+langgraph==0.6.11
+langgraph-checkpoint==2.1.2
+pandas==2.3.3
+RapidFuzz==3.13.0
+zen-engine==2.1.7

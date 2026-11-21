@@ -1,0 +1,147 @@
+{
+ "nodes": [
+  {
+   "id": "in",
+   "type": "inputNode",
+   "name": "In",
+   "position": {
+    "x": 0,
+    "y": 0
+   }
+  },
+  {
+   "id": "t",
+   "type": "decisionTableNode",
+   "name": "RecoveryStrategy",
+   "position": {
+    "x": 240,
+    "y": 0
+   },
+   "content": {
+    "hitPolicy": "first",
+    "inputs": [
+     {
+      "id": "i0",
+      "name": "Class",
+      "field": "cls"
+     },
+     {
+      "id": "i1",
+      "name": "Amount",
+      "field": "amount"
+     },
+     {
+      "id": "i2",
+      "name": "Attempts",
+      "field": "attempts"
+     }
+    ],
+    "outputs": [
+     {
+      "id": "o0",
+      "name": "Action",
+      "field": "action"
+     },
+     {
+      "id": "o1",
+      "name": "Why",
+      "field": "why"
+     },
+     {
+      "id": "o2",
+      "name": "Approval",
+      "field": "approval"
+     }
+    ],
+    "rules": [
+     {
+      "_id": "r0",
+      "i0": "\"NEVER_RETRY\"",
+      "i1": "",
+      "i2": "",
+      "o0": "\"STOP\"",
+      "o1": "\"permanent failure; ask customer for another instrument\"",
+      "o2": "false"
+     },
+     {
+      "_id": "r1",
+      "i0": "\"CHECK_STATUS\"",
+      "i1": "",
+      "i2": "",
+      "o0": "\"CHECK_STATUS\"",
+      "o1": "\"outcome unknown; re-fetch status before any retry (double-debit risk)\"",
+      "o2": "false"
+     },
+     {
+      "_id": "r2",
+      "i0": "\"RETRY_NEXT_DAY\"",
+      "i1": "",
+      "i2": "",
+      "o0": "\"SCHEDULE_NEXT_DAY\"",
+      "o1": "\"limit resets; send payment link next morning\"",
+      "o2": "true"
+     },
+     {
+      "_id": "r3",
+      "i0": "\"RETRY_LATER\"",
+      "i1": "",
+      "i2": "",
+      "o0": "\"PAYMENT_LINK\"",
+      "o1": "\"transient bank/PSP issue; goods already delivered, so send a link the customer can pay by any method\"",
+      "o2": "true"
+     },
+     {
+      "_id": "r5",
+      "i0": "\"ASK_CUSTOMER\"",
+      "i1": "< 100",
+      "i2": "",
+      "o0": "\"FREE_NUDGE_ONLY\"",
+      "o1": "\"expected recovery below outreach cost\"",
+      "o2": "false"
+     },
+     {
+      "_id": "r6",
+      "i0": "\"ASK_CUSTOMER\"",
+      "i1": "",
+      "i2": "",
+      "o0": "\"PAYMENT_LINK\"",
+      "o1": "\"customer must act; send link + reminder\"",
+      "o2": "true"
+     },
+     {
+      "_id": "r7",
+      "i0": "",
+      "i1": "",
+      "i2": "",
+      "o0": "\"HUMAN_REVIEW\"",
+      "o1": "\"unclassified failure\"",
+      "o2": "false"
+     }
+    ]
+   }
+  },
+  {
+   "id": "out",
+   "type": "outputNode",
+   "name": "Out",
+   "position": {
+    "x": 480,
+    "y": 0
+   }
+  }
+ ],
+ "edges": [
+  {
+   "id": "e1",
+   "sourceId": "in",
+   "targetId": "t",
+   "type": "edge"
+  },
+  {
+   "id": "e2",
+   "sourceId": "t",
+   "targetId": "out",
+   "type": "edge"
+  }
+ ]
+}

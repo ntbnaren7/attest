@@ -1,0 +1,839 @@
+{
+ "run": "20261120_094955",
+ "orders": [
+  {
+   "order_id": "seed_1795148396_fa6b3b",
+   "customer": "Shreya Dutta",
+   "amount": 2924.58,
+   "scenario": "failed_user_decline",
+   "expected_final": "FAILED",
+   "expected_recovery_action": "ASK_CUSTOMER",
+   "payment_ids": [
+    "1477158378081483264"
+   ]
+  },
+  {
+   "order_id": "seed_1795148402_cedf0c",
+   "customer": "Mehul Patel",
+   "amount": 896.02,
+   "scenario": "failed_insufficient_funds",
+   "expected_final": "FAILED",
+   "expected_recovery_action": "ASK_CUSTOMER",
+   "payment_ids": [
+    "1477158402437806592"
+   ]
+  },
+  {
+   "order_id": "seed_1795148407_c3fdd7",
+   "customer": "Hitesh Trivedi",
+   "amount": 4330.67,
+   "scenario": "paid_but_unsettled",
+   "expected_final": "SUCCESS",
+   "expected_recovery_action": "none",
+   "payment_ids": [
+    "1477158408531811328"
+   ],
+   "leak": "captured_not_settled (paid but not in any settlement)"
+  },
+  {
+   "order_id": "seed_1795148409_0a5bb7",
+   "customer": "Anitha Pillai",
+   "amount": 4676.73,
+   "scenario": "recovered_after_retry",
+   "expected_final": "SUCCESS",
+   "expected_recovery_action": "none_already_recovered",
+   "payment_ids": [
+    "1477158417507621888",
+    "1477158423442881024"
+   ]
+  },
+  {
+   "order_id": "seed_1795148413_ab9403",
+   "customer": "Biplab Chatterjee",
+   "amount": 1482.74,
+   "scenario": "user_dropped",
+   "expected_final": "USER_DROPPED",
+   "expected_recovery_action": "ASK_CUSTOMER",
+   "payment_ids": [
+    "1477158431118457344"
+   ]
+  },
+  {
+   "order_id": "seed_1795148415_680f48",
+   "customer": "Sujit Mukherjee",
+   "amount": 4506.84,
+   "scenario": "retries_exhausted",
+   "expected_final": "FAILED",
+   "expected_recovery_action": "PAYMENT_LINK",
+   "payment_ids": [
+    "1477158440748260352",
+    "1477158446335392256",
+    "1477158454316833792"
+   ]
+  },
+  {
+   "order_id": "seed_1795148420_72a8ea",
+   "customer": "Priya Pillai",
+   "amount": 4277.79,
+   "scenario": "paid",
+   "expected_final": "SUCCESS",
+   "expected_recovery_action": "none",
+   "payment_ids": [
+    "1477158462277622784"
+   ]
+  },
+  {
+   "order_id": "seed_1795148422_3d6776",
+   "customer": "Jayesh Amin",
+   "amount": 4525.44,
+   "scenario": "failed_user_decline",
+   "expected_final": "FAILED",
+   "expected_recovery_action": "ASK_CUSTOMER",
+   "payment_ids": [
+    "1477158488869510144"
+   ]
+  },
+  {
+   "order_id": "seed_1795148428_f4aea1",
+   "customer": "Priya Pillai",
+   "amount": 3171.04,
+   "scenario": "paid",
+   "expected_final": "SUCCESS",
+   "expected_recovery_action": "none",
+   "payment_ids": [
+    "1477158495337126912"
+   ]
+  },
+  {
+   "order_id": "seed_1795148430_15c6fa",
+   "customer": "Nisha Modi",
+   "amount": 2559.12,
+   "scenario": "paid",
+   "expected_final": "SUCCESS",
+   "expected_recovery_action": "none",
+   "payment_ids": [
+    "1477158501662137344"
+   ]
+  },
+  {
+   "order_id": "seed_1795148432_e049cb",
+   "customer": "Jayesh Amin",
+   "amount": 4361.94,
+   "scenario": "failed_bank_offline",
+   "expected_final": "FAILED",
+   "expected_recovery_action": "RETRY_LATER",
+   "payment_ids": [
+    "1477158510667627008"
+   ]
+  },
+  {
+   "order_id": "seed_1795148434_89f827",
+   "customer": "Priya Pillai",
+   "amount": 2734.87,
+   "scenario": "failed_bank_offline",
+   "expected_final": "FAILED",
+   "expected_recovery_action": "RETRY_LATER",
+   "payment_ids": [
+    "1477158519081400832"
+   ]
+  },
+  {
+   "order_id": "seed_1795148436_74f456",
+   "customer": "Moumita Mukherjee",
+   "amount": 3406.13,
+   "scenario": "failed_bank_offline",
+   "expected_final": "FAILED",
+   "expected_recovery_action": "RETRY_LATER",
+   "payment_ids": [
+    "1477158529034484224"
+   ]
+  },
+  {
+   "order_id": "seed_1795148438_859863",
+   "customer": "Ketan Parekh",
+   "amount": 1171.96,
+   "scenario": "paid",
+   "expected_final": "SUCCESS",
+   "expected_recovery_action": "none",
+   "payment_ids": [
+    "1477158535720204800"
+   ]
+  },
+  {
+   "order_id": "seed_1795148440_0112e0",
+   "customer": "Sujit Mukherjee",
+   "amount": 1954.96,
+   "scenario": "failed_insufficient_funds",
+   "expected_final": "FAILED",
+   "expected_recovery_action": "ASK_CUSTOMER",
+   "payment_ids": [
+    "1477158560311090176"
+   ]
+  },
+  {
+   "order_id": "seed_1795148445_92b08c",
+   "customer": "Jayesh Amin",
+   "amount": 1365.5,
+   "scenario": "paid",
+   "expected_final": "SUCCESS",
+   "expected_recovery_action": "none",
+   "payment_ids": [
+    "1477158567378492416"
+   ]
+  },
+  {
+   "order_id": "seed_1795148448_3b2a24",
+   "customer": "Jayesh Amin",
+   "amount": 513.2,
+   "scenario": "paid",
+   "expected_final": "SUCCESS",
+   "expected_recovery_action": "none",
+   "payment_ids": [
+    "1477158576777927680"
+   ]
+  },
+  {
+   "order_id": "seed_1795148449_7830bc",
+   "customer": "Sujit Mukherjee",
+   "amount": 808.02,
+   "scenario": "paid",
+   "expected_final": "SUCCESS",
+   "expected_recovery_action": "none",
+   "payment_ids": [
+    "1477158587980913664"
+   ]
+  },
+  {
+   "order_id": "seed_1795148452_de5611",
+   "customer": "Jayesh Amin",
+   "amount": 92.12,
+   "scenario": "abandoned_no_attempt",
+   "expected_final": "NO_PAYMENT",
+   "expected_recovery_action": "ASK_CUSTOMER",
+   "payment_ids": []
+  },
+  {
+   "order_id": "seed_1795148453_960707",
+   "customer": "Nilesh Desai",
+   "amount": 1043.2,
+   "scenario": "paid",
+   "expected_final": "SUCCESS",
+   "expected_recovery_action": "none",
+   "payment_ids": [
+    "1477158597523274240"
+   ]
+  },
+  {
+   "order_id": "seed_1795148455_64543c",
+   "customer": "Amit Dutta",
+   "amount": 130.44,
+   "scenario": "paid",
+   "expected_final": "SUCCESS",
+   "expected_recovery_action": "none",
+   "payment_ids": [
+    "1477158607824484864"
+   ]
+  },
+  {
+   "order_id": "seed_1795148457_4980cc",
+   "customer": "Biplab Chatterjee",
+   "amount": 581.97,
+   "scenario": "failed_insufficient_funds",
+   "expected_final": "FAILED",
+   "expected_recovery_action": "ASK_CUSTOMER",
+   "payment_ids": [
+    "1477158633590094336"
+   ]
+  },
+  {
+   "order_id": "seed_1795148463_c012fd",
+   "customer": "Jayesh Amin",
+   "amount": 552.82,
+   "scenario": "user_dropped",
+   "expected_final": "USER_DROPPED",
+   "expected_recovery_action": "ASK_CUSTOMER",
+   "payment_ids": [
+    "1477158639025912320"
+   ]
+  },
+  {
+   "order_id": "seed_1795148464_f48897",
+   "customer": "Nisha Modi",
+   "amount": 3534.64,
+   "scenario": "abandoned_no_attempt",
+   "expected_final": "NO_PAYMENT",
+   "expected_recovery_action": "ASK_CUSTOMER",
+   "payment_ids": []
+  },
+  {
+   "order_id": "seed_1795148465_8c5dc2",
+   "customer": "Shreya Dutta",
+   "amount": 2386.17,
+   "scenario": "abandoned_no_attempt",
+   "expected_final": "NO_PAYMENT",
+   "expected_recovery_action": "ASK_CUSTOMER",
+   "payment_ids": []
+  },
+  {
+   "order_id": "seed_1795148465_d157df",
+   "customer": "Priyanka Sengupta",
+   "amount": 3516.42,
+   "scenario": "paid",
+   "expected_final": "SUCCESS",
+   "expected_recovery_action": "none",
+   "payment_ids": [
+    "1477158651063564800"
+   ]
+  },
+  {
+   "order_id": "seed_1795148467_bb630d",
+   "customer": "Bhavesh Trivedi",
+   "amount": 3286.21,
+   "scenario": "paid",
+   "expected_final": "SUCCESS",
+   "expected_recovery_action": "none",
+   "payment_ids": [
+    "1477158657941904384"
+   ]
+  },
+  {
+   "order_id": "seed_1795148469_7643c7",
+   "customer": "Hitesh Trivedi",
+   "amount": 4843.92,
+   "scenario": "paid",
+   "expected_final": "SUCCESS",
+   "expected_recovery_action": "none",
+   "payment_ids": [
+    "1477158664820562944"
+   ]
+  },
+  {
+   "order_id": "seed_1795148471_46fa0c",
+   "customer": "Jayesh Amin",
+   "amount": 1753.48,
+   "scenario": "failed_bank_offline",
+   "expected_final": "FAILED",
+   "expected_recovery_action": "RETRY_LATER",
+   "payment_ids": [
+    "1477158673901231104"
+   ]
+  },
+  {
+   "order_id": "seed_1795148473_633a77",
+   "customer": "Karthik Menon",
+   "amount": 2209.23,
+   "scenario": "paid",
+   "expected_final": "SUCCESS",
+   "expected_recovery_action": "none",
+   "payment_ids": [
+    "1477158680985410560"
+   ]
+  },
+  {
+   "order_id": "seed_1795148474_e2117f",
+   "customer": "Jayesh Amin",
+   "amount": 48000.0,
+   "scenario": "high_value_failed",
+   "expected_final": "FAILED",
+   "expected_recovery_action": "ASK_CUSTOMER_PRIORITY",
+   "payment_ids": [
+    "1477158704624507904"
+   ]
+  },
+  {
+   "order_id": "seed_1795148479_e18501",
+   "customer": "Hitesh Trivedi",
+   "amount": 2097.45,
+   "scenario": "user_dropped",
+   "expected_final": "USER_DROPPED",
+   "expected_recovery_action": "ASK_CUSTOMER",
+   "payment_ids": [
+    "1477158709888678400"
+   ]
+  },
+  {
+   "order_id": "seed_1795148481_eaa252",
+   "customer": "Jayesh Amin",
+   "amount": 4711.8,
+   "scenario": "paid_but_unsettled",
+   "expected_final": "SUCCESS",
+   "expected_recovery_action": "none",
+   "payment_ids": [
+    "1477158718646385152"
+   ],
+   "leak": "captured_not_settled (paid but not in any settlement)"
+  },
+  {
+   "order_id": "seed_1795148483_0049a8",
+   "customer": "Biplab Chatterjee",
+   "amount": 2361.29,
+   "scenario": "failed_user_decline",
+   "expected_final": "FAILED",
+   "expected_recovery_action": "ASK_CUSTOMER",
+   "payment_ids": [
+    "1477158746714667520"
+   ]
+  },
+  {
+   "order_id": "seed_1795148490_b1ec8f",
+   "customer": "Shreya Dutta",
+   "amount": 169.06,
+   "scenario": "paid",
+   "expected_final": "SUCCESS",
+   "expected_recovery_action": "none",
+   "payment_ids": [
+    "1477158754310233088"
+   ]
+  },
+  {
+   "order_id": "seed_1795148492_cef19b",
+   "customer": "Hitesh Trivedi",
+   "amount": 2524.01,
+   "scenario": "paid",
+   "expected_final": "SUCCESS",
+   "expected_recovery_action": "none",
+   "payment_ids": [
+    "1477158761361177088"
+   ]
+  },
+  {
+   "order_id": "seed_1795148493_f91766",
+   "customer": "Hitesh Trivedi",
+   "amount": 734.93,
+   "scenario": "recovered_after_retry",
+   "expected_final": "SUCCESS",
+   "expected_recovery_action": "none_already_recovered",
+   "payment_ids": [
+    "1477158769053530624",
+    "1477158784522123776"
+   ]
+  },
+  {
+   "order_id": "seed_1795148499_c11f96",
+   "customer": "Nilesh Desai",
+   "amount": 3865.67,
+   "scenario": "paid_but_unsettled",
+   "expected_final": "SUCCESS",
+   "expected_recovery_action": "none",
+   "payment_ids": [
+    "1477158793888004608"
+   ],
+   "leak": "captured_not_settled (paid but not in any settlement)"
+  },
+  {
+   "order_id": "seed_1795148502_4738f4",
+   "customer": "Lakshmi Reddy",
+   "amount": 4837.42,
+   "scenario": "failed_insufficient_funds",
+   "expected_final": "FAILED",
+   "expected_recovery_action": "ASK_CUSTOMER",
+   "payment_ids": [
+    "1477158820790270464"
+   ]
+  },
+  {
+   "order_id": "seed_1795148508_39ed66",
+   "customer": "Jayesh Amin",
+   "amount": 1650.63,
+   "scenario": "paid",
+   "expected_final": "SUCCESS",
+   "expected_recovery_action": "none",
+   "payment_ids": [
+    "1477158828465846784"
+   ]
+  },
+  {
+   "order_id": "seed_1795148837_0592e6",
+   "customer": "Ganesh Pillai",
+   "amount": 5420.75,
+   "scenario": "collect_expired",
+   "expected_final": "FAILED",
+   "expected_recovery_action": "ASK_CUSTOMER",
+   "payment_ids": [
+    "1477160224866769920"
+   ],
+   "how": "testexpired@gocash sim=None",
+   "observed_after_25s": "NOT_ATTEMPTED",
+   "note": "sandbox cannot hold PENDING: testexpired@gocash collect expires to FAILED/CUSTOMER_CANCELLED"
+  }
+ ],
+ "refunds": [
+  {
+   "order_id": "seed_1795148420_72a8ea",
+   "order_amount": 4277.79,
+   "refund_amount": 2138.89,
+   "label": "legit_partial",
+   "is_leak": false,
+   "expected_api": "accept",
+   "api_accepted": true,
+   "refund_id": "rf_1795148515_a88388"
+  },
+  {
+   "order_id": "seed_1795148428_f4aea1",
+   "order_amount": 3171.04,
+   "refund_amount": 951.31,
+   "label": "legit_partial",
+   "is_leak": false,
+   "expected_api": "accept",
+   "api_accepted": true,
+   "refund_id": "rf_1795148515_7f11c6"
+  },
+  {
+   "order_id": "seed_1795148430_15c6fa",
+   "order_amount": 2559.12,
+   "refund_amount": 767.74,
+   "label": "legit_partial",
+   "is_leak": false,
+   "expected_api": "accept",
+   "api_accepted": true,
+   "refund_id": "rf_1795148516_7c9495"
+  },
+  {
+   "order_id": "seed_1795148438_859863",
+   "order_amount": 1171.96,
+   "refund_amount": 1171.96,
+   "label": "legit_full",
+   "is_leak": false,
+   "expected_api": "accept",
+   "api_accepted": true,
+   "refund_id": "rf_1795148517_4c9eb5"
+  },
+  {
+   "order_id": "seed_1795148445_92b08c",
+   "order_amount": 1365.5,
+   "refund_amount": 1365.5,
+   "label": "legit_full",
+   "is_leak": false,
+   "expected_api": "accept",
+   "api_accepted": true,
+   "refund_id": "rf_1795148518_810db4"
+  },
+  {
+   "order_id": "seed_1795148448_3b2a24",
+   "order_amount": 513.2,
+   "refund_amount": 205.28,
+   "label": "duplicate_refund_1st",
+   "is_leak": false,
+   "expected_api": "accept",
+   "api_accepted": true,
+   "refund_id": "rf_1795148519_0ef2d1"
+  },
+  {
+   "order_id": "seed_1795148448_3b2a24",
+   "order_amount": 513.2,
+   "refund_amount": 205.28,
+   "label": "duplicate_refund_2nd",
+   "is_leak": true,
+   "expected_api": "accept (API cannot tell it's a duplicate)",
+   "api_accepted": true,
+   "refund_id": "rf_1795148521_7ff1d6"
+  },
+  {
+   "order_id": "seed_1795148449_7830bc",
+   "order_amount": 808.02,
+   "refund_amount": 908.02,
+   "label": "over_refund_attempt",
+   "is_leak": true,
+   "expected_api": "reject",
+   "api_accepted": false,
+   "refund_id": null
+  },
+  {
+   "order_id": "seed_1795148453_960707",
+   "order_amount": 1043.2,
+   "refund_amount": 730.24,
+   "label": "refund_then_exceed_1st",
+   "is_leak": false,
+   "expected_api": "accept",
+   "api_accepted": true,
+   "refund_id": "rf_1795148522_8a626f"
+  },
+  {
+   "order_id": "seed_1795148453_960707",
+   "order_amount": 1043.2,
+   "refund_amount": 521.6,
+   "label": "refund_then_exceed_2nd",
+   "is_leak": true,
+   "expected_api": "reject (cumulative > amount)",
+   "api_accepted": false,
+   "refund_id": null
+  },
+  {
+   "order_id": "seed_1795148396_fa6b3b",
+   "order_amount": 2924.58,
+   "refund_amount": 2924.58,
+   "label": "refund_on_failed_order",
+   "is_leak": true,
+   "expected_api": "reject",
+   "api_accepted": false,
+   "refund_id": null
+  }
+ ],
+ "links": [
+  {
+   "link_id": "link_1795148524_e910ac",
+   "label": "link_active_unpaid",
+   "amount": 4768.04,
+   "customer": "Mehul Patel",
+   "expected_recovery_action": "REMIND"
+  },
+  {
+   "link_id": "link_1795148524_18e10b",
+   "label": "link_active_unpaid",
+   "amount": 3487.47,
+   "customer": "Karthik Menon",
+   "expected_recovery_action": "REMIND"
+  },
+  {
+   "link_id": "link_1795148525_843d22",
+   "label": "link_cancelled",
+   "amount": 1094.69,
+   "customer": "Bhavesh Trivedi",
+   "expected_recovery_action": "NONE"
+  },
+  {
+   "link_id": "link_1795148526_004b90",
+   "label": "link_short_expiry",
+   "amount": 2303.48,
+   "customer": "Priyanka Sengupta",
+   "expected_recovery_action": "NEW_LINK_AFTER_EXPIRY"
+  },
+  {
+   "link_id": "link_1795148527_0e3e7a",
+   "label": "link_short_expiry",
+   "amount": 3236.91,
+   "customer": "Priyanka Sengupta",
+   "expected_recovery_action": "NEW_LINK_AFTER_EXPIRY"
+  }
+ ],
+ "payouts": [
+  {
+   "transfer_id": "tr_1795148529_9d62b1",
+   "beneficiary_id": "bene_1795147689_963a3e",
+   "amount": 15019.23,
+   "label": "Invoice settlement Sharma Dairy Pvt Ltd",
+   "kind": "vendor_payout",
+   "expected": "SUCCESS",
+   "executed": true
+  },
+  {
+   "transfer_id": "tr_1795148531_9f0bac",
+   "beneficiary_id": "bene_1795147690_e22836",
+   "amount": 23385.84,
+   "label": "Invoice settlement Kolkata Packaging Works",
+   "kind": "vendor_payout",
+   "expected": "SUCCESS",
+   "executed": true
+  },
+  {
+   "transfer_id": "tr_1795148533_c49b7c",
+   "beneficiary_id": "bene_1795147691_dba507",
+   "amount": 3176.96,
+   "label": "Invoice settlement Meena Logistics",
+   "kind": "vendor_payout",
+   "expected": "SUCCESS",
+   "executed": true
+  },
+  {
+   "transfer_id": "tr_1795148534_da5f82",
+   "beneficiary_id": "23434893MKGhOrme7qZIgu0dMuwFjAONLo",
+   "amount": 20091.74,
+   "label": "Invoice settlement Patel Cold Storage",
+   "kind": "vendor_payout",
+   "expected": "SUCCESS",
+   "executed": true
+  },
+  {
+   "transfer_id": "tr_1795148536_fa21c7",
+   "beneficiary_id": "bene_1795148535_c894b5",
+   "amount": 7098.54,
+   "label": "Invoice settlement Ravi Kumar Delivery Partner",
+   "kind": "vendor_payout",
+   "expected": "SUCCESS",
+   "executed": true
+  },
+  {
+   "transfer_id": "tr_1795148564_9aa138",
+   "beneficiary_id": "bene_1795147689_963a3e",
+   "amount": 18450.0,
+   "label": "INV-2231 Sharma Dairy Pvt Ltd",
+   "kind": "duplicate_1st",
+   "expected": "SUCCESS",
+   "executed": true
+  },
+  {
+   "transfer_id": "tr_1795148566_d6b21f",
+   "beneficiary_id": "bene_1795147689_963a3e",
+   "amount": 18450.0,
+   "label": "INV-2231 Sharma Dairy Pvt Ltd",
+   "kind": "duplicate_2nd_LEAK",
+   "expected": "SUCCESS (leak: should have been blocked)",
+   "executed": true
+  },
+  {
+   "transfer_id": "tr_1795148540_fb3b69",
+   "beneficiary_id": "bene_1795147690_e22836",
+   "amount": 75000.0,
+   "label": "Bulk order Kolkata Packaging Works",
+   "kind": "over_limit_no_approval",
+   "expected": "SUCCESS (policy breach: >50k)",
+   "executed": true
+  },
+  {
+   "transfer_id": "tr_1795148541_2d8da1",
+   "beneficiary_id": "bene_1795148541_80f35a",
+   "amount": 850.0,
+   "label": "Weekly payout Arun Das",
+   "kind": "failed_upi",
+   "expected": "FAILED",
+   "executed": true
+  },
+  {
+   "transfer_id": "tr_1795148544_760438",
+   "beneficiary_id": "bene_1795147693_9d11af",
+   "amount": 4200.0,
+   "label": "Invoice Patel Traders",
+   "kind": "failed_invalid_account",
+   "expected": "FAILED",
+   "executed": true
+  },
+  {
+   "transfer_id": "tr_1795148546_130f32",
+   "beneficiary_id": "23434893MKGhRTETQAP4tbAoRXEvRmcpWt",
+   "amount": 9600.0,
+   "label": "Invoice Gupta Hardware",
+   "kind": "stuck_pending",
+   "expected": "PENDING",
+   "executed": true
+  },
+  {
+   "transfer_id": "tr_1795148548_1f2ea8",
+   "beneficiary_id": "bene_1795147696_9fd0c9",
+   "amount": 12300.0,
+   "label": "Invoice Rao Electricals",
+   "kind": "success_then_reversed",
+   "expected": "SUCCESS->REVERSED",
+   "executed": true
+  }
+ ],
+ "settlements": {
+  "simulated_for": [
+   "seed_1795148409_0a5bb7",
+   "seed_1795148420_72a8ea",
+   "seed_1795148428_f4aea1",
+   "seed_1795148430_15c6fa",
+   "seed_1795148438_859863",
+   "seed_1795148445_92b08c",
+   "seed_1795148448_3b2a24",
+   "seed_1795148449_7830bc",
+   "seed_1795148453_960707",
+   "seed_1795148455_64543c",
+   "seed_1795148465_d157df",
+   "seed_1795148467_bb630d",
+   "seed_1795148469_7643c7",
+   "seed_1795148473_633a77",
+   "seed_1795148490_b1ec8f",
+   "seed_1795148492_cef19b",
+   "seed_1795148493_f91766",
+   "seed_1795148508_39ed66"
+  ],
+  "response": {
+   "simulation_id": "sim_113678063MM7LiKJkdY6VJar50P7esEk3k6",
+   "entity": "SETTLEMENTS",
+   "settlement_ids": [
+    1477158908660302336
+   ],
+   "simulation_status": "SUCCESS"
+  }
+ },
+ "payout_requests": [
+  {
+   "request_id": "REQ-01",
+   "payee": "Meena Logistics",
+   "vpa": null,
+   "beneficiary_id": "bene_1795147691_dba507",
+   "amount": 6400.0,
+   "invoice": "INV-3301",
+   "expected": "APPROVE",
+   "why": "known verified vendor, within limit"
+  },
+  {
+   "request_id": "REQ-02",
+   "payee": "Sharma Dairy Pvt Ltd",
+   "vpa": null,
+   "beneficiary_id": "bene_1795147689_963a3e",
+   "amount": 18450.0,
+   "invoice": "INV-2231",
+   "expected": "BLOCK",
+   "why": "duplicate of an already-paid invoice"
+  },
+  {
+   "request_id": "REQ-03",
+   "payee": "Patel Cold Storage",
+   "vpa": null,
+   "beneficiary_id": "23434893MKGhOrme7qZIgu0dMuwFjAONLo",
+   "amount": 82000.0,
+   "invoice": "INV-3307",
+   "expected": "REVIEW",
+   "why": "above \u20b950k auto-approve limit"
+  },
+  {
+   "request_id": "REQ-04",
+   "payee": "Ramesh Kumar",
+   "vpa": "success@upi",
+   "beneficiary_id": null,
+   "amount": 3000.0,
+   "invoice": "EXP-118",
+   "expected": "REVIEW",
+   "why": "name at bank (JOHN SNOW per UPI penny-drop) does not match payee"
+  },
+  {
+   "request_id": "REQ-05",
+   "payee": "Suresh Traders",
+   "bank_account": "2640101002729",
+   "ifsc": "CNRR0002640",
+   "beneficiary_id": null,
+   "amount": 5000.0,
+   "invoice": "INV-3310",
+   "expected": "BLOCK",
+   "why": "IFSC invalid / not in registry"
+  },
+  {
+   "request_id": "REQ-06",
+   "payee": "Ashiq Ahmed Nengroo",
+   "vpa": "success@upi",
+   "beneficiary_id": null,
+   "amount": 2500.0,
+   "invoice": "MISC-9",
+   "expected": "BLOCK",
+   "why": "payee on Indian MHA banned list (OpenSanctions)"
+  },
+  {
+   "request_id": "REQ-07",
+   "payee": "Ravi Kumar Delivery Partner",
+   "vpa": "success@upi",
+   "beneficiary_id": "bene_1795148535_c894b5",
+   "amount": 1150.0,
+   "invoice": "WK-47",
+   "expected": "APPROVE",
+   "why": "routine partner payout"
+  },
+  {
+   "request_id": "REQ-08",
+   "payee": "Gupta Hardware",
+   "beneficiary_id": null,
+   "amount": 9600.0,
+   "invoice": "INV-3312",
+   "expected": "REVIEW",
+   "why": "previous payout to this payee still PENDING: resolve before paying again"
+  }
+ ],
+ "payout_balance_before": {
+  "balance": "99936207.9",
+  "availableBalance": "99935204.90"
+ },
+ "payout_balance_after": {
+  "balance": "99780047.09",
+  "availableBalance": "99769444.09"
+ }
+}

@@ -1,0 +1,835 @@
+[
+ {
+  "step": "order.create",
+  "t": "09:49:56",
+  "ok": true,
+  "scenario": "failed_user_decline"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:01",
+  "ok": true,
+  "order_id": "seed_1795148396_fa6b3b",
+  "vpa": "testdeclineuser@gocash",
+  "sim": null,
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:50:02",
+  "ok": true,
+  "scenario": "failed_insufficient_funds"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:07",
+  "ok": true,
+  "order_id": "seed_1795148402_cedf0c",
+  "vpa": "testinsufficientfunds@gocash",
+  "sim": null,
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:50:08",
+  "ok": true,
+  "scenario": "pending"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:09",
+  "ok": true,
+  "order_id": "seed_1795148407_c3fdd7",
+  "vpa": "testsuccess@gocash",
+  "sim": "PENDING",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:50:10",
+  "ok": true,
+  "scenario": "recovered_after_retry"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:11",
+  "ok": true,
+  "order_id": "seed_1795148409_0a5bb7",
+  "vpa": "testfailure@gocash",
+  "sim": "FAILED",
+  "code": "ISSUER_NOT_AVAILABLE"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:13",
+  "ok": true,
+  "order_id": "seed_1795148409_0a5bb7",
+  "vpa": "testsuccess@gocash",
+  "sim": "SUCCESS",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:50:13",
+  "ok": true,
+  "scenario": "user_dropped"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:14",
+  "ok": true,
+  "order_id": "seed_1795148413_ab9403",
+  "vpa": "testfailure@gocash",
+  "sim": "USER_DROPPED",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:50:16",
+  "ok": true,
+  "scenario": "retries_exhausted"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:17",
+  "ok": true,
+  "order_id": "seed_1795148415_680f48",
+  "vpa": "testfailure@gocash",
+  "sim": "FAILED",
+  "code": "ISSUER_NOT_AVAILABLE"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:18",
+  "ok": true,
+  "order_id": "seed_1795148415_680f48",
+  "vpa": "testfailure@gocash",
+  "sim": "FAILED",
+  "code": "ISSUER_NOT_AVAILABLE"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:20",
+  "ok": true,
+  "order_id": "seed_1795148415_680f48",
+  "vpa": "testfailure@gocash",
+  "sim": "FAILED",
+  "code": "ISSUER_NOT_AVAILABLE"
+ },
+ {
+  "step": "order.create",
+  "t": "09:50:21",
+  "ok": true,
+  "scenario": "paid"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:22",
+  "ok": true,
+  "order_id": "seed_1795148420_72a8ea",
+  "vpa": "testsuccess@gocash",
+  "sim": "SUCCESS",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:50:23",
+  "ok": true,
+  "scenario": "failed_user_decline"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:28",
+  "ok": true,
+  "order_id": "seed_1795148422_3d6776",
+  "vpa": "testdeclineuser@gocash",
+  "sim": null,
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:50:29",
+  "ok": true,
+  "scenario": "paid"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:30",
+  "ok": true,
+  "order_id": "seed_1795148428_f4aea1",
+  "vpa": "testsuccess@gocash",
+  "sim": "SUCCESS",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:50:30",
+  "ok": true,
+  "scenario": "paid"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:31",
+  "ok": true,
+  "order_id": "seed_1795148430_15c6fa",
+  "vpa": "testsuccess@gocash",
+  "sim": "SUCCESS",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:50:32",
+  "ok": true,
+  "scenario": "failed_bank_offline"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:33",
+  "ok": true,
+  "order_id": "seed_1795148432_e049cb",
+  "vpa": "testfailure@gocash",
+  "sim": "FAILED",
+  "code": "ISSUER_NOT_AVAILABLE"
+ },
+ {
+  "step": "order.create",
+  "t": "09:50:34",
+  "ok": true,
+  "scenario": "failed_bank_offline"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:36",
+  "ok": true,
+  "order_id": "seed_1795148434_89f827",
+  "vpa": "testfailure@gocash",
+  "sim": "FAILED",
+  "code": "ISSUER_NOT_AVAILABLE"
+ },
+ {
+  "step": "order.create",
+  "t": "09:50:37",
+  "ok": true,
+  "scenario": "failed_bank_offline"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:38",
+  "ok": true,
+  "order_id": "seed_1795148436_74f456",
+  "vpa": "testfailure@gocash",
+  "sim": "FAILED",
+  "code": "ISSUER_NOT_AVAILABLE"
+ },
+ {
+  "step": "order.create",
+  "t": "09:50:38",
+  "ok": true,
+  "scenario": "paid"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:39",
+  "ok": true,
+  "order_id": "seed_1795148438_859863",
+  "vpa": "testsuccess@gocash",
+  "sim": "SUCCESS",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:50:40",
+  "ok": true,
+  "scenario": "failed_insufficient_funds"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:45",
+  "ok": true,
+  "order_id": "seed_1795148440_0112e0",
+  "vpa": "testinsufficientfunds@gocash",
+  "sim": null,
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:50:46",
+  "ok": true,
+  "scenario": "paid"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:47",
+  "ok": true,
+  "order_id": "seed_1795148445_92b08c",
+  "vpa": "testsuccess@gocash",
+  "sim": "SUCCESS",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:50:48",
+  "ok": true,
+  "scenario": "paid"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:49",
+  "ok": true,
+  "order_id": "seed_1795148448_3b2a24",
+  "vpa": "testsuccess@gocash",
+  "sim": "SUCCESS",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:50:51",
+  "ok": true,
+  "scenario": "paid"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:52",
+  "ok": true,
+  "order_id": "seed_1795148449_7830bc",
+  "vpa": "testsuccess@gocash",
+  "sim": "SUCCESS",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:50:53",
+  "ok": true,
+  "scenario": "abandoned_no_attempt"
+ },
+ {
+  "step": "order.create",
+  "t": "09:50:53",
+  "ok": true,
+  "scenario": "paid"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:55",
+  "ok": true,
+  "order_id": "seed_1795148453_960707",
+  "vpa": "testsuccess@gocash",
+  "sim": "SUCCESS",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:50:56",
+  "ok": true,
+  "scenario": "paid"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:50:57",
+  "ok": true,
+  "order_id": "seed_1795148455_64543c",
+  "vpa": "testsuccess@gocash",
+  "sim": "SUCCESS",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:50:57",
+  "ok": true,
+  "scenario": "failed_insufficient_funds"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:51:02",
+  "ok": true,
+  "order_id": "seed_1795148457_4980cc",
+  "vpa": "testinsufficientfunds@gocash",
+  "sim": null,
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:51:03",
+  "ok": true,
+  "scenario": "user_dropped"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:51:04",
+  "ok": true,
+  "order_id": "seed_1795148463_c012fd",
+  "vpa": "testfailure@gocash",
+  "sim": "USER_DROPPED",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:51:05",
+  "ok": true,
+  "scenario": "abandoned_no_attempt"
+ },
+ {
+  "step": "order.create",
+  "t": "09:51:05",
+  "ok": true,
+  "scenario": "abandoned_no_attempt"
+ },
+ {
+  "step": "order.create",
+  "t": "09:51:06",
+  "ok": true,
+  "scenario": "paid"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:51:07",
+  "ok": true,
+  "order_id": "seed_1795148465_d157df",
+  "vpa": "testsuccess@gocash",
+  "sim": "SUCCESS",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:51:07",
+  "ok": true,
+  "scenario": "paid"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:51:08",
+  "ok": true,
+  "order_id": "seed_1795148467_bb630d",
+  "vpa": "testsuccess@gocash",
+  "sim": "SUCCESS",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:51:09",
+  "ok": true,
+  "scenario": "paid"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:51:10",
+  "ok": true,
+  "order_id": "seed_1795148469_7643c7",
+  "vpa": "testsuccess@gocash",
+  "sim": "SUCCESS",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:51:11",
+  "ok": true,
+  "scenario": "failed_bank_offline"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:51:12",
+  "ok": true,
+  "order_id": "seed_1795148471_46fa0c",
+  "vpa": "testfailure@gocash",
+  "sim": "FAILED",
+  "code": "ISSUER_NOT_AVAILABLE"
+ },
+ {
+  "step": "order.create",
+  "t": "09:51:13",
+  "ok": true,
+  "scenario": "paid"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:51:14",
+  "ok": true,
+  "order_id": "seed_1795148473_633a77",
+  "vpa": "testsuccess@gocash",
+  "sim": "SUCCESS",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:51:14",
+  "ok": true,
+  "scenario": "high_value_failed"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:51:19",
+  "ok": true,
+  "order_id": "seed_1795148474_e2117f",
+  "vpa": "testinsufficientfunds@gocash",
+  "sim": null,
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:51:20",
+  "ok": true,
+  "scenario": "user_dropped"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:51:21",
+  "ok": true,
+  "order_id": "seed_1795148479_e18501",
+  "vpa": "testfailure@gocash",
+  "sim": "USER_DROPPED",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:51:22",
+  "ok": true,
+  "scenario": "pending"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:51:23",
+  "ok": true,
+  "order_id": "seed_1795148481_eaa252",
+  "vpa": "testsuccess@gocash",
+  "sim": "PENDING",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:51:24",
+  "ok": true,
+  "scenario": "failed_user_decline"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:51:30",
+  "ok": true,
+  "order_id": "seed_1795148483_0049a8",
+  "vpa": "testdeclineuser@gocash",
+  "sim": null,
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:51:30",
+  "ok": true,
+  "scenario": "paid"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:51:31",
+  "ok": true,
+  "order_id": "seed_1795148490_b1ec8f",
+  "vpa": "testsuccess@gocash",
+  "sim": "SUCCESS",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:51:32",
+  "ok": true,
+  "scenario": "paid"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:51:33",
+  "ok": true,
+  "order_id": "seed_1795148492_cef19b",
+  "vpa": "testsuccess@gocash",
+  "sim": "SUCCESS",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:51:34",
+  "ok": true,
+  "scenario": "recovered_after_retry"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:51:35",
+  "ok": true,
+  "order_id": "seed_1795148493_f91766",
+  "vpa": "testfailure@gocash",
+  "sim": "FAILED",
+  "code": "ISSUER_NOT_AVAILABLE"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:51:39",
+  "ok": true,
+  "order_id": "seed_1795148493_f91766",
+  "vpa": "testsuccess@gocash",
+  "sim": "SUCCESS",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:51:40",
+  "ok": true,
+  "scenario": "pending"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:51:41",
+  "ok": true,
+  "order_id": "seed_1795148499_c11f96",
+  "vpa": "testsuccess@gocash",
+  "sim": "PENDING",
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:51:42",
+  "ok": true,
+  "scenario": "failed_insufficient_funds"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:51:47",
+  "ok": true,
+  "order_id": "seed_1795148502_4738f4",
+  "vpa": "testinsufficientfunds@gocash",
+  "sim": null,
+  "code": ""
+ },
+ {
+  "step": "order.create",
+  "t": "09:51:48",
+  "ok": true,
+  "scenario": "paid"
+ },
+ {
+  "step": "order.attempt",
+  "t": "09:51:49",
+  "ok": true,
+  "order_id": "seed_1795148508_39ed66",
+  "vpa": "testsuccess@gocash",
+  "sim": "SUCCESS",
+  "code": ""
+ },
+ {
+  "step": "refund",
+  "t": "09:51:55",
+  "ok": true,
+  "order_id": "seed_1795148420_72a8ea",
+  "label": "legit_partial"
+ },
+ {
+  "step": "refund",
+  "t": "09:51:56",
+  "ok": true,
+  "order_id": "seed_1795148428_f4aea1",
+  "label": "legit_partial"
+ },
+ {
+  "step": "refund",
+  "t": "09:51:57",
+  "ok": true,
+  "order_id": "seed_1795148430_15c6fa",
+  "label": "legit_partial"
+ },
+ {
+  "step": "refund",
+  "t": "09:51:58",
+  "ok": true,
+  "order_id": "seed_1795148438_859863",
+  "label": "legit_full"
+ },
+ {
+  "step": "refund",
+  "t": "09:51:59",
+  "ok": true,
+  "order_id": "seed_1795148445_92b08c",
+  "label": "legit_full"
+ },
+ {
+  "step": "refund",
+  "t": "09:52:00",
+  "ok": true,
+  "order_id": "seed_1795148448_3b2a24",
+  "label": "duplicate_refund_1st"
+ },
+ {
+  "step": "refund",
+  "t": "09:52:01",
+  "ok": true,
+  "order_id": "seed_1795148448_3b2a24",
+  "label": "duplicate_refund_2nd"
+ },
+ {
+  "step": "refund",
+  "t": "09:52:02",
+  "ok": false,
+  "status": 400,
+  "error": {
+   "code": "refund_amount_invalid",
+   "help": "Check latest errors and resolution from Merchant Dashboard API logs: https://bit.ly/4glEd0W Help Document: https://bit.ly/4eeZYO9",
+   "message": "total amount of refunds cannot be greater than the transaction amount",
+   "type": "invalid_request_error"
+  },
+  "order_id": "seed_1795148449_7830bc",
+  "label": "over_refund_attempt"
+ },
+ {
+  "step": "refund",
+  "t": "09:52:03",
+  "ok": true,
+  "order_id": "seed_1795148453_960707",
+  "label": "refund_then_exceed_1st"
+ },
+ {
+  "step": "refund",
+  "t": "09:52:03",
+  "ok": false,
+  "status": 400,
+  "error": {
+   "code": "refund_post_failed",
+   "help": "Check latest errors and resolution from Merchant Dashboard API logs: https://bit.ly/4glEd0W Help Document: https://bit.ly/4eeZYO9",
+   "message": "Total amount of Refunds cannot be greater than the transaction amount",
+   "type": "invalid_request_error"
+  },
+  "order_id": "seed_1795148453_960707",
+  "label": "refund_then_exceed_2nd"
+ },
+ {
+  "step": "refund",
+  "t": "09:52:04",
+  "ok": false,
+  "status": 400,
+  "error": {
+   "code": "order_id_not_paid",
+   "help": "Check latest errors and resolution from Merchant Dashboard API logs: https://bit.ly/4glEd0W Help Document: https://bit.ly/4eeZYO9",
+   "message": "transaction not found",
+   "type": "invalid_request_error"
+  },
+  "order_id": "seed_1795148396_fa6b3b",
+  "label": "refund_on_failed_order"
+ },
+ {
+  "step": "link.create",
+  "t": "09:52:04",
+  "ok": true,
+  "label": "link_active_unpaid"
+ },
+ {
+  "step": "link.create",
+  "t": "09:52:05",
+  "ok": true,
+  "label": "link_active_unpaid"
+ },
+ {
+  "step": "link.create",
+  "t": "09:52:05",
+  "ok": true,
+  "label": "link_cancelled"
+ },
+ {
+  "step": "link.cancel",
+  "t": "09:52:06",
+  "ok": true,
+  "link_id": "link_1795148525_843d22"
+ },
+ {
+  "step": "link.create",
+  "t": "09:52:07",
+  "ok": true,
+  "label": "link_short_expiry"
+ },
+ {
+  "step": "link.create",
+  "t": "09:52:07",
+  "ok": true,
+  "label": "link_short_expiry"
+ },
+ {
+  "step": "settlement.simulate",
+  "t": "09:52:08",
+  "ok": true,
+  "n": 18
+ },
+ {
+  "step": "payout",
+  "t": "09:52:10",
+  "ok": true,
+  "label": "Invoice settlement Sharma Dairy Pvt Ltd"
+ },
+ {
+  "step": "payout",
+  "t": "09:52:12",
+  "ok": true,
+  "label": "Invoice settlement Kolkata Packaging Works"
+ },
+ {
+  "step": "payout",
+  "t": "09:52:13",
+  "ok": true,
+  "label": "Invoice settlement Meena Logistics"
+ },
+ {
+  "step": "payout",
+  "t": "09:52:15",
+  "ok": true,
+  "label": "Invoice settlement Patel Cold Storage"
+ },
+ {
+  "step": "payout",
+  "t": "09:52:16",
+  "ok": true,
+  "label": "Invoice settlement Ravi Kumar Delivery Partner"
+ },
+ {
+  "step": "payout",
+  "t": "09:52:17",
+  "ok": false,
+  "status": 400,
+  "error": {
+   "type": "invalid_request_error",
+   "code": "transfer_remarks_invalid",
+   "message": "transfer_remarks : invalid value provided. Value received: INV-2231 Sharma Dairy Pvt Ltd"
+  },
+  "label": "INV-2231 Sharma Dairy Pvt Ltd"
+ },
+ {
+  "step": "payout",
+  "t": "09:52:20",
+  "ok": false,
+  "status": 400,
+  "error": {
+   "type": "invalid_request_error",
+   "code": "transfer_remarks_invalid",
+   "message": "transfer_remarks : invalid value provided. Value received: INV-2231 Sharma Dairy Pvt Ltd"
+  },
+  "label": "INV-2231 Sharma Dairy Pvt Ltd"
+ },
+ {
+  "step": "payout",
+  "t": "09:52:21",
+  "ok": true,
+  "label": "Bulk order Kolkata Packaging Works"
+ },
+ {
+  "step": "payout",
+  "t": "09:52:22",
+  "ok": true,
+  "label": "Weekly payout Arun Das"
+ },
+ {
+  "step": "payout",
+  "t": "09:52:24",
+  "ok": true,
+  "label": "Invoice Patel Traders"
+ },
+ {
+  "step": "payout",
+  "t": "09:52:26",
+  "ok": true,
+  "label": "Invoice Gupta Hardware"
+ },
+ {
+  "step": "payout",
+  "t": "09:52:30",
+  "ok": true,
+  "label": "Invoice Rao Electricals"
+ }
+]

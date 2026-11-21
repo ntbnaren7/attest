@@ -1,0 +1,1076 @@
+{
+ "run": "20261120_094955",
+ "fetched_at": "2026-11-20 10:00:18",
+ "collections": {
+  "total": 41,
+  "match_expected": 41,
+  "mismatches": [],
+  "rows": [
+   {
+    "order_id": "seed_1795148396_fa6b3b",
+    "scenario": "failed_user_decline",
+    "amount": 2924.58,
+    "expected": "FAILED",
+    "observed": "FAILED",
+    "order_status": "ACTIVE",
+    "attempts": 1,
+    "error_code": "TRANSACTION_DECLINED",
+    "error_reason": "decline_originating_from_user",
+    "error_source": "customer",
+    "taxonomy_class": "ASK_CUSTOMER",
+    "expected_action": "ASK_CUSTOMER"
+   },
+   {
+    "order_id": "seed_1795148402_cedf0c",
+    "scenario": "failed_insufficient_funds",
+    "amount": 896.02,
+    "expected": "FAILED",
+    "observed": "FAILED",
+    "order_status": "ACTIVE",
+    "attempts": 1,
+    "error_code": "CUSTOMER_AUTH_FAILURE",
+    "error_reason": "insufficient_funds",
+    "error_source": "customer",
+    "taxonomy_class": "ASK_CUSTOMER",
+    "expected_action": "ASK_CUSTOMER"
+   },
+   {
+    "order_id": "seed_1795148407_c3fdd7",
+    "scenario": "paid_but_unsettled",
+    "amount": 4330.67,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS",
+    "order_status": "PAID",
+    "attempts": 1,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": null,
+    "expected_action": "none"
+   },
+   {
+    "order_id": "seed_1795148409_0a5bb7",
+    "scenario": "recovered_after_retry",
+    "amount": 4676.73,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS",
+    "order_status": "PAID",
+    "attempts": 2,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": null,
+    "expected_action": "none_already_recovered"
+   },
+   {
+    "order_id": "seed_1795148413_ab9403",
+    "scenario": "user_dropped",
+    "amount": 1482.74,
+    "expected": "USER_DROPPED",
+    "observed": "USER_DROPPED",
+    "order_status": "ACTIVE",
+    "attempts": 1,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": "ASK_CUSTOMER",
+    "expected_action": "ASK_CUSTOMER"
+   },
+   {
+    "order_id": "seed_1795148415_680f48",
+    "scenario": "retries_exhausted",
+    "amount": 4506.84,
+    "expected": "FAILED",
+    "observed": "FAILED",
+    "order_status": "ACTIVE",
+    "attempts": 3,
+    "error_code": "NETWORK_ERROR",
+    "error_reason": "issuer_bank_offline",
+    "error_source": "bank",
+    "taxonomy_class": "RETRY_LATER",
+    "expected_action": "PAYMENT_LINK"
+   },
+   {
+    "order_id": "seed_1795148420_72a8ea",
+    "scenario": "paid",
+    "amount": 4277.79,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS",
+    "order_status": "PAID",
+    "attempts": 1,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": null,
+    "expected_action": "none"
+   },
+   {
+    "order_id": "seed_1795148422_3d6776",
+    "scenario": "failed_user_decline",
+    "amount": 4525.44,
+    "expected": "FAILED",
+    "observed": "FAILED",
+    "order_status": "ACTIVE",
+    "attempts": 1,
+    "error_code": "TRANSACTION_DECLINED",
+    "error_reason": "decline_originating_from_user",
+    "error_source": "customer",
+    "taxonomy_class": "ASK_CUSTOMER",
+    "expected_action": "ASK_CUSTOMER"
+   },
+   {
+    "order_id": "seed_1795148428_f4aea1",
+    "scenario": "paid",
+    "amount": 3171.04,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS",
+    "order_status": "PAID",
+    "attempts": 1,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": null,
+    "expected_action": "none"
+   },
+   {
+    "order_id": "seed_1795148430_15c6fa",
+    "scenario": "paid",
+    "amount": 2559.12,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS",
+    "order_status": "PAID",
+    "attempts": 1,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": null,
+    "expected_action": "none"
+   },
+   {
+    "order_id": "seed_1795148432_e049cb",
+    "scenario": "failed_bank_offline",
+    "amount": 4361.94,
+    "expected": "FAILED",
+    "observed": "FAILED",
+    "order_status": "ACTIVE",
+    "attempts": 1,
+    "error_code": "NETWORK_ERROR",
+    "error_reason": "issuer_bank_offline",
+    "error_source": "bank",
+    "taxonomy_class": "RETRY_LATER",
+    "expected_action": "RETRY_LATER"
+   },
+   {
+    "order_id": "seed_1795148434_89f827",
+    "scenario": "failed_bank_offline",
+    "amount": 2734.87,
+    "expected": "FAILED",
+    "observed": "FAILED",
+    "order_status": "ACTIVE",
+    "attempts": 1,
+    "error_code": "NETWORK_ERROR",
+    "error_reason": "issuer_bank_offline",
+    "error_source": "bank",
+    "taxonomy_class": "RETRY_LATER",
+    "expected_action": "RETRY_LATER"
+   },
+   {
+    "order_id": "seed_1795148436_74f456",
+    "scenario": "failed_bank_offline",
+    "amount": 3406.13,
+    "expected": "FAILED",
+    "observed": "FAILED",
+    "order_status": "ACTIVE",
+    "attempts": 1,
+    "error_code": "NETWORK_ERROR",
+    "error_reason": "issuer_bank_offline",
+    "error_source": "bank",
+    "taxonomy_class": "RETRY_LATER",
+    "expected_action": "RETRY_LATER"
+   },
+   {
+    "order_id": "seed_1795148438_859863",
+    "scenario": "paid",
+    "amount": 1171.96,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS",
+    "order_status": "PAID",
+    "attempts": 1,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": null,
+    "expected_action": "none"
+   },
+   {
+    "order_id": "seed_1795148440_0112e0",
+    "scenario": "failed_insufficient_funds",
+    "amount": 1954.96,
+    "expected": "FAILED",
+    "observed": "FAILED",
+    "order_status": "ACTIVE",
+    "attempts": 1,
+    "error_code": "CUSTOMER_AUTH_FAILURE",
+    "error_reason": "insufficient_funds",
+    "error_source": "customer",
+    "taxonomy_class": "ASK_CUSTOMER",
+    "expected_action": "ASK_CUSTOMER"
+   },
+   {
+    "order_id": "seed_1795148445_92b08c",
+    "scenario": "paid",
+    "amount": 1365.5,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS",
+    "order_status": "PAID",
+    "attempts": 1,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": null,
+    "expected_action": "none"
+   },
+   {
+    "order_id": "seed_1795148448_3b2a24",
+    "scenario": "paid",
+    "amount": 513.2,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS",
+    "order_status": "PAID",
+    "attempts": 1,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": null,
+    "expected_action": "none"
+   },
+   {
+    "order_id": "seed_1795148449_7830bc",
+    "scenario": "paid",
+    "amount": 808.02,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS",
+    "order_status": "PAID",
+    "attempts": 1,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": null,
+    "expected_action": "none"
+   },
+   {
+    "order_id": "seed_1795148452_de5611",
+    "scenario": "abandoned_no_attempt",
+    "amount": 92.12,
+    "expected": "NO_PAYMENT",
+    "observed": "NO_PAYMENT",
+    "order_status": "ACTIVE",
+    "attempts": 0,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": "ASK_CUSTOMER",
+    "expected_action": "ASK_CUSTOMER"
+   },
+   {
+    "order_id": "seed_1795148453_960707",
+    "scenario": "paid",
+    "amount": 1043.2,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS",
+    "order_status": "PAID",
+    "attempts": 1,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": null,
+    "expected_action": "none"
+   },
+   {
+    "order_id": "seed_1795148455_64543c",
+    "scenario": "paid",
+    "amount": 130.44,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS",
+    "order_status": "PAID",
+    "attempts": 1,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": null,
+    "expected_action": "none"
+   },
+   {
+    "order_id": "seed_1795148457_4980cc",
+    "scenario": "failed_insufficient_funds",
+    "amount": 581.97,
+    "expected": "FAILED",
+    "observed": "FAILED",
+    "order_status": "ACTIVE",
+    "attempts": 1,
+    "error_code": "CUSTOMER_AUTH_FAILURE",
+    "error_reason": "insufficient_funds",
+    "error_source": "customer",
+    "taxonomy_class": "ASK_CUSTOMER",
+    "expected_action": "ASK_CUSTOMER"
+   },
+   {
+    "order_id": "seed_1795148463_c012fd",
+    "scenario": "user_dropped",
+    "amount": 552.82,
+    "expected": "USER_DROPPED",
+    "observed": "USER_DROPPED",
+    "order_status": "ACTIVE",
+    "attempts": 1,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": "ASK_CUSTOMER",
+    "expected_action": "ASK_CUSTOMER"
+   },
+   {
+    "order_id": "seed_1795148464_f48897",
+    "scenario": "abandoned_no_attempt",
+    "amount": 3534.64,
+    "expected": "NO_PAYMENT",
+    "observed": "NO_PAYMENT",
+    "order_status": "ACTIVE",
+    "attempts": 0,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": "ASK_CUSTOMER",
+    "expected_action": "ASK_CUSTOMER"
+   },
+   {
+    "order_id": "seed_1795148465_8c5dc2",
+    "scenario": "abandoned_no_attempt",
+    "amount": 2386.17,
+    "expected": "NO_PAYMENT",
+    "observed": "NO_PAYMENT",
+    "order_status": "ACTIVE",
+    "attempts": 0,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": "ASK_CUSTOMER",
+    "expected_action": "ASK_CUSTOMER"
+   },
+   {
+    "order_id": "seed_1795148465_d157df",
+    "scenario": "paid",
+    "amount": 3516.42,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS",
+    "order_status": "PAID",
+    "attempts": 1,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": null,
+    "expected_action": "none"
+   },
+   {
+    "order_id": "seed_1795148467_bb630d",
+    "scenario": "paid",
+    "amount": 3286.21,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS",
+    "order_status": "PAID",
+    "attempts": 1,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": null,
+    "expected_action": "none"
+   },
+   {
+    "order_id": "seed_1795148469_7643c7",
+    "scenario": "paid",
+    "amount": 4843.92,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS",
+    "order_status": "PAID",
+    "attempts": 1,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": null,
+    "expected_action": "none"
+   },
+   {
+    "order_id": "seed_1795148471_46fa0c",
+    "scenario": "failed_bank_offline",
+    "amount": 1753.48,
+    "expected": "FAILED",
+    "observed": "FAILED",
+    "order_status": "ACTIVE",
+    "attempts": 1,
+    "error_code": "NETWORK_ERROR",
+    "error_reason": "issuer_bank_offline",
+    "error_source": "bank",
+    "taxonomy_class": "RETRY_LATER",
+    "expected_action": "RETRY_LATER"
+   },
+   {
+    "order_id": "seed_1795148473_633a77",
+    "scenario": "paid",
+    "amount": 2209.23,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS",
+    "order_status": "PAID",
+    "attempts": 1,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": null,
+    "expected_action": "none"
+   },
+   {
+    "order_id": "seed_1795148474_e2117f",
+    "scenario": "high_value_failed",
+    "amount": 48000.0,
+    "expected": "FAILED",
+    "observed": "FAILED",
+    "order_status": "ACTIVE",
+    "attempts": 1,
+    "error_code": "CUSTOMER_AUTH_FAILURE",
+    "error_reason": "insufficient_funds",
+    "error_source": "customer",
+    "taxonomy_class": "ASK_CUSTOMER",
+    "expected_action": "ASK_CUSTOMER_PRIORITY"
+   },
+   {
+    "order_id": "seed_1795148479_e18501",
+    "scenario": "user_dropped",
+    "amount": 2097.45,
+    "expected": "USER_DROPPED",
+    "observed": "USER_DROPPED",
+    "order_status": "ACTIVE",
+    "attempts": 1,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": "ASK_CUSTOMER",
+    "expected_action": "ASK_CUSTOMER"
+   },
+   {
+    "order_id": "seed_1795148481_eaa252",
+    "scenario": "paid_but_unsettled",
+    "amount": 4711.8,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS",
+    "order_status": "PAID",
+    "attempts": 1,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": null,
+    "expected_action": "none"
+   },
+   {
+    "order_id": "seed_1795148483_0049a8",
+    "scenario": "failed_user_decline",
+    "amount": 2361.29,
+    "expected": "FAILED",
+    "observed": "FAILED",
+    "order_status": "ACTIVE",
+    "attempts": 1,
+    "error_code": "TRANSACTION_DECLINED",
+    "error_reason": "decline_originating_from_user",
+    "error_source": "customer",
+    "taxonomy_class": "ASK_CUSTOMER",
+    "expected_action": "ASK_CUSTOMER"
+   },
+   {
+    "order_id": "seed_1795148490_b1ec8f",
+    "scenario": "paid",
+    "amount": 169.06,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS",
+    "order_status": "PAID",
+    "attempts": 1,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": null,
+    "expected_action": "none"
+   },
+   {
+    "order_id": "seed_1795148492_cef19b",
+    "scenario": "paid",
+    "amount": 2524.01,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS",
+    "order_status": "PAID",
+    "attempts": 1,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": null,
+    "expected_action": "none"
+   },
+   {
+    "order_id": "seed_1795148493_f91766",
+    "scenario": "recovered_after_retry",
+    "amount": 734.93,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS",
+    "order_status": "PAID",
+    "attempts": 2,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": null,
+    "expected_action": "none_already_recovered"
+   },
+   {
+    "order_id": "seed_1795148499_c11f96",
+    "scenario": "paid_but_unsettled",
+    "amount": 3865.67,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS",
+    "order_status": "PAID",
+    "attempts": 1,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": null,
+    "expected_action": "none"
+   },
+   {
+    "order_id": "seed_1795148502_4738f4",
+    "scenario": "failed_insufficient_funds",
+    "amount": 4837.42,
+    "expected": "FAILED",
+    "observed": "FAILED",
+    "order_status": "ACTIVE",
+    "attempts": 1,
+    "error_code": "CUSTOMER_AUTH_FAILURE",
+    "error_reason": "insufficient_funds",
+    "error_source": "customer",
+    "taxonomy_class": "ASK_CUSTOMER",
+    "expected_action": "ASK_CUSTOMER"
+   },
+   {
+    "order_id": "seed_1795148508_39ed66",
+    "scenario": "paid",
+    "amount": 1650.63,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS",
+    "order_status": "PAID",
+    "attempts": 1,
+    "error_code": null,
+    "error_reason": "",
+    "error_source": null,
+    "taxonomy_class": null,
+    "expected_action": "none"
+   },
+   {
+    "order_id": "seed_1795148837_0592e6",
+    "scenario": "collect_expired",
+    "amount": 5420.75,
+    "expected": "FAILED",
+    "observed": "FAILED",
+    "order_status": "ACTIVE",
+    "attempts": 1,
+    "error_code": "CUSTOMER_CANCELLED",
+    "error_reason": "request_expired",
+    "error_source": "customer",
+    "taxonomy_class": "ASK_CUSTOMER",
+    "expected_action": "ASK_CUSTOMER"
+   }
+  ],
+  "by_observed_status": {
+   "FAILED": 14,
+   "SUCCESS": 21,
+   "USER_DROPPED": 3,
+   "NO_PAYMENT": 3
+  },
+  "by_error": {
+   "TRANSACTION_DECLINED/decline_originating_from_user": 3,
+   "CUSTOMER_AUTH_FAILURE/insufficient_funds": 5,
+   "NETWORK_ERROR/issuer_bank_offline": 5,
+   "CUSTOMER_CANCELLED/request_expired": 1
+  },
+  "gmv_attempted": 149971.18,
+  "collected": 51559.55,
+  "at_risk": 98411.63,
+  "taxonomy_on_live_errors": {
+   "failed_user_decline (TRANSACTION_DECLINED)": "ASK_CUSTOMER (expected ASK_CUSTOMER)",
+   "failed_insufficient_funds (CUSTOMER_AUTH_FAILURE)": "ASK_CUSTOMER (expected ASK_CUSTOMER)",
+   "user_dropped (USER_DROPPED)": "ASK_CUSTOMER (expected ASK_CUSTOMER)",
+   "retries_exhausted (NETWORK_ERROR)": "RETRY_LATER (expected PAYMENT_LINK)",
+   "failed_bank_offline (NETWORK_ERROR)": "RETRY_LATER (expected RETRY_LATER)",
+   "abandoned_no_attempt (NO_PAYMENT)": "ASK_CUSTOMER (expected ASK_CUSTOMER)",
+   "high_value_failed (CUSTOMER_AUTH_FAILURE)": "ASK_CUSTOMER (expected ASK_CUSTOMER_PRIORITY)",
+   "collect_expired (CUSTOMER_CANCELLED)": "ASK_CUSTOMER (expected ASK_CUSTOMER)"
+  },
+  "order_status_of_failed": {
+   "ACTIVE": 20
+  }
+ },
+ "settlements": {
+  "paid_orders": 21,
+  "fee_rate_pct_seen": {
+   "1.9": 19,
+   "1.901": 1,
+   "1.899": 1
+  },
+  "gst_pct_seen": {
+   "18.0": 8,
+   "17.99": 3,
+   "18.01": 4,
+   "17.95": 1,
+   "17.98": 3,
+   "18.15": 1,
+   "18.07": 1
+  },
+  "net_formula_holds": "21/21",
+  "total_fees": 979.62,
+  "total_gst": 176.32,
+  "not_yet_settled": 3,
+  "bulk_settlements_api_rows": 3,
+  "sample": [
+   {
+    "order_id": "seed_1795148407_c3fdd7",
+    "amount": 4330.67,
+    "service_charge": 82.28,
+    "service_tax": 14.81,
+    "net": 4233.58,
+    "fee_rate_pct": 1.9,
+    "gst_pct": 18.0,
+    "net_ok": true,
+    "settlement_id": null,
+    "utr": null
+   },
+   {
+    "order_id": "seed_1795148409_0a5bb7",
+    "amount": 4676.73,
+    "service_charge": 88.86,
+    "service_tax": 15.99,
+    "net": 4571.88,
+    "fee_rate_pct": 1.9,
+    "gst_pct": 17.99,
+    "net_ok": true,
+    "settlement_id": 1477158908660302336,
+    "utr": "UTR1477158908660302336"
+   },
+   {
+    "order_id": "seed_1795148420_72a8ea",
+    "amount": 4277.79,
+    "service_charge": 81.28,
+    "service_tax": 14.63,
+    "net": 4181.88,
+    "fee_rate_pct": 1.9,
+    "gst_pct": 18.0,
+    "net_ok": true,
+    "settlement_id": 1477158908660302336,
+    "utr": "UTR1477158908660302336"
+   }
+  ],
+  "simulate_response": {
+   "simulation_id": "sim_113678063MM7LiKJkdY6VJar50P7esEk3k6",
+   "entity": "SETTLEMENTS",
+   "settlement_ids": [
+    1477158908660302336
+   ],
+   "simulation_status": "SUCCESS"
+  }
+ },
+ "refunds": {
+  "attempted": 11,
+  "accepted": 8,
+  "blocked_by_cashfree": [
+   [
+    "over_refund_attempt",
+    908.02
+   ],
+   [
+    "refund_then_exceed_2nd",
+    521.6
+   ],
+   [
+    "refund_on_failed_order",
+    2924.58
+   ]
+  ],
+  "leaks_that_got_through": [
+   [
+    "duplicate_refund_2nd",
+    205.28,
+    "2 same-amount refunds visible"
+   ]
+  ],
+  "total_refunded": 7536.2,
+  "rows": [
+   {
+    "order_id": "seed_1795148420_72a8ea",
+    "label": "legit_partial",
+    "amount": 2138.89,
+    "is_leak": false,
+    "expected_api": "accept",
+    "api_accepted": true,
+    "live_refunds_on_order": 1,
+    "live_statuses": [
+     "ONHOLD"
+    ],
+    "same_amount_refunds_visible": 1
+   },
+   {
+    "order_id": "seed_1795148428_f4aea1",
+    "label": "legit_partial",
+    "amount": 951.31,
+    "is_leak": false,
+    "expected_api": "accept",
+    "api_accepted": true,
+    "live_refunds_on_order": 1,
+    "live_statuses": [
+     "ONHOLD"
+    ],
+    "same_amount_refunds_visible": 1
+   },
+   {
+    "order_id": "seed_1795148430_15c6fa",
+    "label": "legit_partial",
+    "amount": 767.74,
+    "is_leak": false,
+    "expected_api": "accept",
+    "api_accepted": true,
+    "live_refunds_on_order": 1,
+    "live_statuses": [
+     "ONHOLD"
+    ],
+    "same_amount_refunds_visible": 1
+   },
+   {
+    "order_id": "seed_1795148438_859863",
+    "label": "legit_full",
+    "amount": 1171.96,
+    "is_leak": false,
+    "expected_api": "accept",
+    "api_accepted": true,
+    "live_refunds_on_order": 1,
+    "live_statuses": [
+     "ONHOLD"
+    ],
+    "same_amount_refunds_visible": 1
+   },
+   {
+    "order_id": "seed_1795148445_92b08c",
+    "label": "legit_full",
+    "amount": 1365.5,
+    "is_leak": false,
+    "expected_api": "accept",
+    "api_accepted": true,
+    "live_refunds_on_order": 1,
+    "live_statuses": [
+     "ONHOLD"
+    ],
+    "same_amount_refunds_visible": 1
+   },
+   {
+    "order_id": "seed_1795148448_3b2a24",
+    "label": "duplicate_refund_1st",
+    "amount": 205.28,
+    "is_leak": false,
+    "expected_api": "accept",
+    "api_accepted": true,
+    "live_refunds_on_order": 2,
+    "live_statuses": [
+     "ONHOLD"
+    ],
+    "same_amount_refunds_visible": 2
+   },
+   {
+    "order_id": "seed_1795148448_3b2a24",
+    "label": "duplicate_refund_2nd",
+    "amount": 205.28,
+    "is_leak": true,
+    "expected_api": "accept (API cannot tell it's a duplicate)",
+    "api_accepted": true,
+    "live_refunds_on_order": 2,
+    "live_statuses": [
+     "ONHOLD"
+    ],
+    "same_amount_refunds_visible": 2
+   },
+   {
+    "order_id": "seed_1795148449_7830bc",
+    "label": "over_refund_attempt",
+    "amount": 908.02,
+    "is_leak": true,
+    "expected_api": "reject",
+    "api_accepted": false,
+    "live_refunds_on_order": 0,
+    "live_statuses": [],
+    "same_amount_refunds_visible": 0
+   },
+   {
+    "order_id": "seed_1795148453_960707",
+    "label": "refund_then_exceed_1st",
+    "amount": 730.24,
+    "is_leak": false,
+    "expected_api": "accept",
+    "api_accepted": true,
+    "live_refunds_on_order": 1,
+    "live_statuses": [
+     "ONHOLD"
+    ],
+    "same_amount_refunds_visible": 1
+   },
+   {
+    "order_id": "seed_1795148453_960707",
+    "label": "refund_then_exceed_2nd",
+    "amount": 521.6,
+    "is_leak": true,
+    "expected_api": "reject (cumulative > amount)",
+    "api_accepted": false,
+    "live_refunds_on_order": 1,
+    "live_statuses": [
+     "ONHOLD"
+    ],
+    "same_amount_refunds_visible": 0
+   },
+   {
+    "order_id": "seed_1795148396_fa6b3b",
+    "label": "refund_on_failed_order",
+    "amount": 2924.58,
+    "is_leak": true,
+    "expected_api": "reject",
+    "api_accepted": false,
+    "live_refunds_on_order": 0,
+    "live_statuses": [],
+    "same_amount_refunds_visible": 0
+   }
+  ]
+ },
+ "links": [
+  {
+   "label": "link_active_unpaid",
+   "amount": 4768.04,
+   "observed": "ACTIVE",
+   "expiry": "2026-12-20T09:52:04+05:30",
+   "expected_action": "REMIND"
+  },
+  {
+   "label": "link_active_unpaid",
+   "amount": 3487.47,
+   "observed": "ACTIVE",
+   "expiry": "2026-12-20T09:52:05+05:30",
+   "expected_action": "REMIND"
+  },
+  {
+   "label": "link_cancelled",
+   "amount": 1094.69,
+   "observed": "CANCELLED",
+   "expiry": "2026-12-20T09:52:05+05:30",
+   "expected_action": "NONE"
+  },
+  {
+   "label": "link_short_expiry",
+   "amount": 2303.48,
+   "observed": "ACTIVE",
+   "expiry": "2026-11-20T10:12:06+05:30",
+   "expected_action": "NEW_LINK_AFTER_EXPIRY"
+  },
+  {
+   "label": "link_short_expiry",
+   "amount": 3236.91,
+   "observed": "ACTIVE",
+   "expiry": "2026-11-20T10:12:07+05:30",
+   "expected_action": "NEW_LINK_AFTER_EXPIRY"
+  }
+ ],
+ "payouts": {
+  "executed": 12,
+  "rows": [
+   {
+    "kind": "vendor_payout",
+    "amount": 15019.23,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS/COMPLETED",
+    "fee": 12.0,
+    "fee_tax": 2.16,
+    "utr": "1795148531443445",
+    "fundsource": "CASHFREE_2343489"
+   },
+   {
+    "kind": "vendor_payout",
+    "amount": 23385.84,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS/COMPLETED",
+    "fee": 12.0,
+    "fee_tax": 2.16,
+    "utr": "1795148533165636",
+    "fundsource": "CASHFREE_2343489"
+   },
+   {
+    "kind": "vendor_payout",
+    "amount": 3176.96,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS/COMPLETED",
+    "fee": 7.0,
+    "fee_tax": 1.26,
+    "utr": "1795148534909841",
+    "fundsource": "CASHFREE_2343489"
+   },
+   {
+    "kind": "vendor_payout",
+    "amount": 20091.74,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS/SENT_TO_BENEFICIARY",
+    "fee": 12.0,
+    "fee_tax": 2.16,
+    "utr": "1795148536332515",
+    "fundsource": "CASHFREE_2343489"
+   },
+   {
+    "kind": "vendor_payout",
+    "amount": 7098.54,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS/COMPLETED",
+    "fee": 8.0,
+    "fee_tax": 1.44,
+    "utr": "1795148536443250",
+    "fundsource": "CASHFREE_2343489"
+   },
+   {
+    "kind": "duplicate_1st",
+    "amount": 18450.0,
+    "expected": "SUCCESS",
+    "observed": "SUCCESS/COMPLETED",
+    "fee": 12.0,
+    "fee_tax": 2.16,
+    "utr": "1795148565698327",
+    "fundsource": "CASHFREE_2343489"
+   },
+   {
+    "kind": "duplicate_2nd_LEAK",
+    "amount": 18450.0,
+    "expected": "SUCCESS (leak: should have been blocked)",
+    "observed": "SUCCESS/COMPLETED",
+    "fee": 12.0,
+    "fee_tax": 2.16,
+    "utr": "1795148568199348",
+    "fundsource": "CASHFREE_2343489"
+   },
+   {
+    "kind": "over_limit_no_approval",
+    "amount": 75000.0,
+    "expected": "SUCCESS (policy breach: >50k)",
+    "observed": "SUCCESS/COMPLETED",
+    "fee": 12.0,
+    "fee_tax": 2.16,
+    "utr": "1795148543001952",
+    "fundsource": "CASHFREE_2343489"
+   },
+   {
+    "kind": "failed_upi",
+    "amount": 850.0,
+    "expected": "FAILED",
+    "observed": "FAILED/INVALID_ACCOUNT_FAIL",
+    "fee": 0.0,
+    "fee_tax": 0.0,
+    "utr": null,
+    "fundsource": "CASHFREE_2343489"
+   },
+   {
+    "kind": "failed_invalid_account",
+    "amount": 4200.0,
+    "expected": "FAILED",
+    "observed": "FAILED/INVALID_ACCOUNT_FAIL",
+    "fee": 0.0,
+    "fee_tax": 0.0,
+    "utr": null,
+    "fundsource": "CASHFREE_2343489"
+   },
+   {
+    "kind": "stuck_pending",
+    "amount": 9600.0,
+    "expected": "PENDING",
+    "observed": "PENDING/ERROR_FETCHING_STATUS",
+    "fee": 0.0,
+    "fee_tax": 0.0,
+    "utr": null,
+    "fundsource": "CASHFREE_2343489"
+   },
+   {
+    "kind": "success_then_reversed",
+    "amount": 12300.0,
+    "expected": "SUCCESS->REVERSED",
+    "observed": "REVERSED/RETURNED_FROM_BENEFICIARY",
+    "fee": 0.0,
+    "fee_tax": 0.0,
+    "utr": "1795148550850389",
+    "fundsource": "CASHFREE_2343489"
+   }
+  ],
+  "paid_out": 180672.31,
+  "payout_fees_incl_gst": 102.66,
+  "duplicate_both_succeeded": true,
+  "fee_schedule_seen": {
+   "\u20b912.0 + \u20b92.16 GST": 6,
+   "\u20b97.0 + \u20b91.26 GST": 1,
+   "\u20b98.0 + \u20b91.44 GST": 1
+  },
+  "balance": {
+   "balance": "99755432.93",
+   "availableBalance": "99744830.93"
+  },
+  "balance_before": {
+   "balance": "99936207.9",
+   "availableBalance": "99935204.90"
+  }
+ },
+ "payout_requests_for_policy_agent": [
+  [
+   "REQ-01",
+   "Meena Logistics",
+   6400.0,
+   "APPROVE"
+  ],
+  [
+   "REQ-02",
+   "Sharma Dairy Pvt Ltd",
+   18450.0,
+   "BLOCK"
+  ],
+  [
+   "REQ-03",
+   "Patel Cold Storage",
+   82000.0,
+   "REVIEW"
+  ],
+  [
+   "REQ-04",
+   "Ramesh Kumar",
+   3000.0,
+   "REVIEW"
+  ],
+  [
+   "REQ-05",
+   "Suresh Traders",
+   5000.0,
+   "BLOCK"
+  ],
+  [
+   "REQ-06",
+   "Ashiq Ahmed Nengroo",
+   2500.0,
+   "BLOCK"
+  ],
+  [
+   "REQ-07",
+   "Ravi Kumar Delivery Partner",
+   1150.0,
+   "APPROVE"
+  ],
+  [
+   "REQ-08",
+   "Gupta Hardware",
+   9600.0,
+   "REVIEW"
+  ]
+ ]
+}

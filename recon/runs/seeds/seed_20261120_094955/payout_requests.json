@@ -1,0 +1,82 @@
+[
+ {
+  "request_id": "REQ-01",
+  "payee": "Meena Logistics",
+  "vpa": null,
+  "beneficiary_id": "bene_1795147691_dba507",
+  "amount": 6400.0,
+  "invoice": "INV-3301",
+  "expected": "APPROVE",
+  "why": "known verified vendor, within limit"
+ },
+ {
+  "request_id": "REQ-02",
+  "payee": "Sharma Dairy Pvt Ltd",
+  "vpa": null,
+  "beneficiary_id": "bene_1795147689_963a3e",
+  "amount": 18450.0,
+  "invoice": "INV-2231",
+  "expected": "BLOCK",
+  "why": "duplicate of an already-paid invoice"
+ },
+ {
+  "request_id": "REQ-03",
+  "payee": "Patel Cold Storage",
+  "vpa": null,
+  "beneficiary_id": "23434893MKGhOrme7qZIgu0dMuwFjAONLo",
+  "amount": 82000.0,
+  "invoice": "INV-3307",
+  "expected": "REVIEW",
+  "why": "above \u20b950k auto-approve limit"
+ },
+ {
+  "request_id": "REQ-04",
+  "payee": "Ramesh Kumar",
+  "vpa": "success@upi",
+  "beneficiary_id": null,
+  "amount": 3000.0,
+  "invoice": "EXP-118",
+  "expected": "REVIEW",
+  "why": "name at bank (JOHN SNOW per UPI penny-drop) does not match payee"
+ },
+ {
+  "request_id": "REQ-05",
+  "payee": "Suresh Traders",
+  "bank_account": "2640101002729",
+  "ifsc": "CNRR0002640",
+  "beneficiary_id": null,
+  "amount": 5000.0,
+  "invoice": "INV-3310",
+  "expected": "BLOCK",
+  "why": "IFSC invalid / not in registry"
+ },
+ {
+  "request_id": "REQ-06",
+  "payee": "Ashiq Ahmed Nengroo",
+  "vpa": "success@upi",
+  "beneficiary_id": null,
+  "amount": 2500.0,
+  "invoice": "MISC-9",
+  "expected": "BLOCK",
+  "why": "payee on Indian MHA banned list (OpenSanctions)"
+ },
+ {
+  "request_id": "REQ-07",
+  "payee": "Ravi Kumar Delivery Partner",
+  "vpa": "success@upi",
+  "beneficiary_id": "bene_1795148535_c894b5",
+  "amount": 1150.0,
+  "invoice": "WK-47",
+  "expected": "APPROVE",
+  "why": "routine partner payout"
+ },
+ {
+  "request_id": "REQ-08",
+  "payee": "Gupta Hardware",
+  "beneficiary_id": null,
+  "amount": 9600.0,
+  "invoice": "INV-3312",
+  "expected": "REVIEW",
+  "why": "previous payout to this payee still PENDING: resolve before paying again"
+ }
+]

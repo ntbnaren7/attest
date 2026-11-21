@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from fastapi.concurrency import run_in_threadpool
 from fastapi.staticfiles import StaticFiles
 
-from . import approvals, auth, coordinator, importer, live, webhooks
+from . import approvals, auth, coordinator, importer, live, recon, webhooks
 from .config import ROOT, settings as default_settings
 from .context import Ctx
 from .db import now as dbnow
@@ -76,6 +76,32 @@ def create_app(ctx: Ctx | None = None, start_reconciler: bool = True) -> FastAPI
         return approvals.APPROVAL_CHANNEL if request.headers.get("x-approval-screen") == "1" else "unknown"
 
     live.register(app, ctx, sec, operator)
+
+    # ---------------------------------------------------------------- reconciliation (teammate engine, recon/)
+    @app.get("/api/recon/status")
+    def recon_status(op: auth.Operator = Depends(operator)):
+        ok, why = recon.available()
+        return {"available": ok, "reason": why, "mode": recon.mode(), "run": recon.RUN, "agents": recon.AGENTS}
+
+    @app.post("/api/recon/run")
+    async def recon_run(op: auth.Operator = Depends(operator)):
+        sec.limit("provider", op.id)
+        ok, why = recon.available()
+        if not ok:
+            raise HTTPException(503, f"Reconciliation engine unavailable: {why}")
+        return await run_in_threadpool(recon.run, op.merchant_id)
+
+    @app.post("/api/recon/approve")
+    async def recon_approve(request: Request, op: auth.Operator = Depends(operator)):
+        sec.limit("money", op.id)
+        body = await request.json()
+        try:
+            return await run_in_threadpool(recon.approve, op.merchant_id, str(body.get("thread_id", "")),
+                                           dict(body.get("decisions") or {}))
+        except KeyError:
+            raise HTTPException(404, "Unknown reconciliation run.")
+        except ValueError as e:
+            raise HTTPException(409, str(e))
 
     @app.exception_handler(approvals.ApprovalError)
     def _appr_err(_, e: approvals.ApprovalError):

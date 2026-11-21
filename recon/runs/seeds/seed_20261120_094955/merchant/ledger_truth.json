@@ -1,0 +1,33 @@
+{
+ "ledger_status": [
+  {
+   "order_id": "seed_1795148457_4980cc",
+   "kind": "FULFILLED_BUT_UNPAID",
+   "amount": 581.97
+  },
+  {
+   "order_id": "seed_1795148422_3d6776",
+   "kind": "FULFILLED_BUT_UNPAID",
+   "amount": 4525.44
+  },
+  {
+   "order_id": "seed_1795148469_7643c7",
+   "kind": "PAID_NOT_FULFILLED",
+   "amount": 4843.92
+  }
+ ],
+ "bank": [
+  {
+   "utr": "UTR1477158282438132224",
+   "cf_settlement_id": "1477158282438132224",
+   "kind": "MANGLED_REF_SHOULD_MATCH",
+   "delta": 0
+  },
+  {
+   "utr": "UTR1477158908660302336",
+   "cf_settlement_id": "1477158908660302336",
+   "kind": "SHORT_CREDIT",
+   "delta": 37.5
+  }
+ ]
+}
