@@ -14,7 +14,7 @@ from .indic_numbers import corrected_amount
 PAID = [
     r"\balready paid\b", r"\bpaid\b", r"\bde diya\b", r"\bde di\b", r"\bdiya hai\b", r"\bbhar diya\b", r"\bjama\b",
     r"\bpayment (?:ho gaya|done|kar diya|kiya)\b", r"दे दिया", r"दे दिए", r"चुका दिया", r"भर दिया", r"जमा कर",
-    r"payment हो चुका", r"हो चुका है", r"கட்டிட்டேன்", r"கட்டினேன்", r"அனுப்பினேன்", r"பணம் கட்டி", r"payment பண்ணேன்",
+    r"payment हो चुका", r"हो चुका है", r"भुगतान हो गया", r"भुगतान कर दिया", r"पेमेंट हो गया", r"கட்டிட்டேன்", r"கட்டினேன்", r"அனுப்பினேன்", r"பணம் கட்டி", r"payment பண்ணேன்",
 ]
 NOT_PAID = [r"नहीं दि", r"नहीं दे", r"nahi diya", r"not paid", r"haven'?t paid", r"கட்டலை", r"கட்ட முடியாது", r"नहीं दूँगा", r"नहीं दूंगा"]
 PROMISE = [
