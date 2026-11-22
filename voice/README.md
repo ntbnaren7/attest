@@ -1,10 +1,32 @@
-# WhatsApp voice & intelligence layer (teammate's code, vendored)
+# WhatsApp Voice & Intelligence Layer
 
-Copied from https://github.com/DevSanjay09/voice-sarvam at commit `3eea85a`: `config.py`, `schemas.py` and
-`services/`. The only change: the hard-coded Sarvam key default in `config.py` is blanked. The key comes from
-`SARVAM_VOICE_API_KEY` in `.env`, and `app/inbox.py` passes it in.
+**Core Contributor & Module Author:** DevSanjay09 ([DevSanjay09/voice-sarvam](https://github.com/DevSanjay09/voice-sarvam))
 
-It handles the customer side: a WhatsApp-style voice note or text goes through Sarvam speech-to-text, the
-`sarvam-105b-conversations` model (entities, intent, natural reply) and Bulbul text-to-speech. `app/inbox.py` turns the
-result into claims on the right account, runs the payment check, and only lets the natural reply through when it
-makes no promise or amount the verified facts do not support.
+This module provides the conversational voice and text intelligence pipeline for **Attest**.
+It handles customer-facing interactions: ingesting WhatsApp-style voice notes or text, extracting structured financial claims and entities, and providing multilingual responses.
+
+---
+
+## Key Capabilities
+
+1. **Speech-to-Text (STT)**:
+   - Multilingual transcription via Sarvam Saaras (`saaras:v3`).
+   - Handles standard WhatsApp audio codecs including OGG/Opus, MP3, WAV, and M4A.
+
+2. **Multilingual Intelligence & Entity Extraction**:
+   - Primary engine: Sarvam 105B Conversations (`sarvam-105b-conversations`).
+   - Extracts structured entities:
+     - Order IDs (`CFORD-...`, `ORD_...`, `INV-...`, `L-...`, `B-...`)
+     - Payment & transaction IDs (12-digit UPI UTRs and bank references)
+     - Amounts & beneficiary VPAs
+     - Intents (`RECOVER_FAILED_PAYMENT`, `CHECK_PAYMENT_STATUS`, `RECONCILE_TRANSACTIONS`, `INITIATE_PAYOUT`, `DETECT_FEE_LEAKAGE`)
+   - **Resilient Offline Fallback**:
+     - Fast rule-based entity and intent extraction when offline or when API keys are unconfigured.
+     - Multilingual script and keyword detection (Hindi, Tamil, Kannada, Telugu, Bengali, Malayalam, Hinglish).
+
+3. **Text-to-Speech (TTS)**:
+   - Voice responses synthesized via Sarvam Bulbul (`bulbul:v3`).
+   - Supports language-matched voice audio in Indian languages.
+
+4. **Attest Integration**:
+   - Wired into `app/inbox.py`. Extracted claims are verified against Cashfree gateway facts and ledger records.

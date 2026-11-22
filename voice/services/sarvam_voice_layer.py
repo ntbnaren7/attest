@@ -123,11 +123,17 @@ class SarvamVoiceLayer:
 
         # Handle empty/silent audio
         if not raw_transcript:
-            fallback_text = (
-                "माफ़ कीजिये, आपकी आवाज़ साफ़ नहीं आई। कृपया अपना संदेश दोबारा बोलें।"
-                if (detected_lang and detected_lang.startswith("hi"))
-                else "I'm sorry, I couldn't hear any speech clearly. Could you please repeat your query?"
-            )
+            if detected_lang and detected_lang.startswith("hi"):
+                fallback_text = "माफ़ कीजिये, आपकी आवाज़ साफ़ नहीं आई। कृपया अपना संदेश दोबारा बोलें।"
+            elif detected_lang and detected_lang.startswith("ta"):
+                fallback_text = "மன்னிக்கவும், உங்கள் குரல் தெளிவாகக் கேட்கவில்லை. தயவுசெய்து மீண்டும் பேசவும்."
+            elif detected_lang and detected_lang.startswith("kn"):
+                fallback_text = "ಕ್ಷಮಿಸಿ, ನಿಮ್ಮ ಧ್ವನಿ ಸ್ಪಷ್ಟವಾಗಿ ಕೇಳಿಸಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೊಮ್ಮೆ ಮಾತನಾಡಿ."
+            elif detected_lang and detected_lang.startswith("te"):
+                fallback_text = "క్షమించండి, మీ వాయిస్ స్పష్టంగా వినబడలేదు. దయచేసి మళ్ళీ చెప్పండి."
+            else:
+                fallback_text = "I'm sorry, I couldn't hear any speech clearly. Could you please repeat your query?"
+
             audio_b64 = self._synthesize_audio_safely(
                 text=fallback_text,
                 language_code=detected_lang,
@@ -297,7 +303,11 @@ class SarvamVoiceLayer:
     ) -> Dict[str, Any]:
         """
         Calls Sarvam 105B Conversations to extract structured entities and craft a natural reply.
+        Fast-fails to intelligent rule-based fallback if no API key is configured or on network failure.
         """
+        if not self.api_key:
+            return self._fallback_extraction(text, sender_phone, language_hint=language_hint)
+
         endpoint = f"{self.base_url}/v1/chat/completions"
         headers = {
             "api-subscription-key": self.api_key,
@@ -326,7 +336,7 @@ class SarvamVoiceLayer:
             res = self.sarvam_service.session.post(endpoint, headers=headers, json=payload, timeout=45)
             if res.status_code != 200:
                 logger.error(f"Sarvam LLM Error ({res.status_code}): {res.text}")
-                return self._fallback_extraction(text, sender_phone)
+                return self._fallback_extraction(text, sender_phone, language_hint=language_hint)
 
             res_json = res.json()
             choice = res_json["choices"][0]
@@ -336,7 +346,7 @@ class SarvamVoiceLayer:
 
             parsed = self._clean_and_parse_json(raw_content)
             if not parsed or not isinstance(parsed, dict):
-                return self._fallback_extraction(text, sender_phone)
+                return self._fallback_extraction(text, sender_phone, language_hint=language_hint)
 
             # Ensure entities dict exists
             entities = parsed.get("entities") or {}
@@ -352,7 +362,7 @@ class SarvamVoiceLayer:
 
         except Exception as e:
             logger.error(f"Sarvam LLM extraction exception: {e}")
-            return self._fallback_extraction(text, sender_phone)
+            return self._fallback_extraction(text, sender_phone, language_hint=language_hint)
 
     # =========================================================
     # 5. AUDIO SYNTHESIS HELPER
@@ -407,8 +417,35 @@ class SarvamVoiceLayer:
     # =========================================================
     # 6. HELPERS: JSON PARSER & CONTEXTUAL FALLBACKS
     # =========================================================
+    def _detect_language(self, text: str, hint: Optional[str] = None) -> str:
+        """Detect language code from hint, Unicode scripts, or multilingual phrasing."""
+        if hint and hint != "unknown":
+            return hint
+        if re.search(r"[\u0900-\u097F]", text):
+            return "hi-IN"
+        if re.search(r"[\u0B80-\u0BFF]", text):
+            return "ta-IN"
+        if re.search(r"[\u0C80-\u0CFF]", text):
+            return "kn-IN"
+        if re.search(r"[\u0C00-\u0C7F]", text):
+            return "te-IN"
+        if re.search(r"[\u0980-\u09FF]", text):
+            return "bn-IN"
+        if re.search(r"[\u0D00-\u0D7F]", text):
+            return "ml-IN"
+        t_lower = text.lower()
+        if any(w in t_lower for w in ["maine", "kar diya", "bhai", "paisa", "paise", "de dunga", "bheja", "aayega", "nahi", "rupaye", "kripya", "kab"]):
+            return "hi-IN"
+        if any(w in t_lower for w in ["panam", "kuduthen", "anupiten", "eppo"]):
+            return "ta-IN"
+        if any(w in t_lower for w in ["kotte", "kottiddini", "duddu"]):
+            return "kn-IN"
+        return "en-IN"
+
     def _clean_and_parse_json(self, content: str) -> Optional[Dict[str, Any]]:
-        cleaned = re.sub(r"^```json\s*", "", content, flags=re.MULTILINE)
+        # Strip reasoning models <think> tags if present
+        cleaned = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL)
+        cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned.strip(), flags=re.MULTILINE)
         cleaned = re.sub(r"^```\s*$", "", cleaned, flags=re.MULTILINE).strip()
         try:
             return json.loads(cleaned)
@@ -421,41 +458,64 @@ class SarvamVoiceLayer:
                     pass
         return None
 
-    def _fallback_extraction(self, text: str, sender_phone: Optional[str] = None) -> Dict[str, Any]:
-        """Provides smart rule-based extraction if LLM fails or is unreachable."""
+    def _fallback_extraction(
+        self,
+        text: str,
+        sender_phone: Optional[str] = None,
+        language_hint: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Provides smart rule-based extraction with multilingual and entity support."""
         t_lower = text.lower()
+        detected_lang = self._detect_language(text, hint=language_hint)
+
         target_action = "customer_support"
         priority = "MEDIUM"
         intent = "GENERAL_QUERY"
 
-        if any(w in t_lower for w in ["fail", "deduct", "cut", "debit", "lost", "recover", "retry", "refund"]):
+        if any(w in t_lower for w in ["fail", "deduct", "cut", "debit", "lost", "recover", "retry", "refund", "already paid", "paid", "diya", "bhar diya"]):
             target_action = "payment_recovery"
             priority = "HIGH"
-            intent = "RECOVER_FAILED_PAYMENT"
-        elif any(w in t_lower for w in ["reconcil", "ledger", "utr", "mismatch", "settle"]):
+            intent = "CHECK_PAYMENT_STATUS" if ("already" in t_lower or "paid" in t_lower or "diya" in t_lower) else "RECOVER_FAILED_PAYMENT"
+        elif any(w in t_lower for w in ["reconcil", "ledger", "utr", "mismatch", "settle", "statement"]):
             target_action = "reconciliation"
+            priority = "MEDIUM"
             intent = "RECONCILE_TRANSACTIONS"
         elif any(w in t_lower for w in ["leak", "mdr", "fee", "charge", "commission"]):
             target_action = "leakage_detection"
+            priority = "MEDIUM"
             intent = "DETECT_FEE_LEAKAGE"
         elif any(w in t_lower for w in ["payout", "transfer", "vpa", "vendor", "disburse"]):
             target_action = "payout_management"
+            priority = "MEDIUM"
             intent = "INITIATE_PAYOUT"
 
-        order_match = re.search(r"\b(ORD_?\d+)\b", text, re.IGNORECASE)
+        # 1. Order / Invoice / Account Reference: CFORD-..., ORD_..., INV-..., L-1001, B-501
+        order_match = re.search(r"\b((?:CFORD|ORD|INV|REF)[-_]?[A-Za-z0-9]+)\b", text, re.IGNORECASE)
+        if not order_match:
+            order_match = re.search(r"\b([A-Z]{1,3}-\d{3,6})\b", text)
+
+        # 2. UTR / Transaction ID (12-digit UPI reference or explicit UTR/TXN prefix)
+        txn_match = re.search(r"\b(?:utr|txn|rrn|txnid|transaction(?:_id)?|ref(?:erence)?)[:\s#]*([A-Za-z0-9]{10,24})\b", text, re.IGNORECASE)
+        if not txn_match:
+            txn_match = re.search(r"\b(\d{12})\b", text)
+
+        # 3. Amount
         amount_match = re.search(r"(?:₹|rs\.?|inr)?\s*(\d+(?:,\d+)*(?:\.\d+)?)\s*(?:₹|rupees|rs)?", text, re.IGNORECASE)
         vpa_match = re.search(r"[\w\.\-]+@[\w\-]+", text)
 
         amount = None
         if amount_match:
             try:
-                amount = float(amount_match.group(1).replace(",", ""))
+                parsed_amt = float(amount_match.group(1).replace(",", ""))
+                # Prevent UTR / phone numbers from being treated as amounts
+                if parsed_amt < 100_000_000:
+                    amount = parsed_amt
             except Exception:
                 pass
 
         entities = {
             "order_id": order_match.group(1).upper() if order_match else None,
-            "transaction_id": None,
+            "transaction_id": txn_match.group(1) if txn_match else None,
             "amount": amount,
             "currency": "INR",
             "customer_phone": sender_phone,
@@ -465,18 +525,19 @@ class SarvamVoiceLayer:
 
         reply = self._generate_contextual_fallback_reply({
             "target_action": target_action,
-            "entities": entities
+            "entities": entities,
+            "detected_language": detected_lang
         }, text)
 
         return {
-            "detected_language": "en-IN",
+            "detected_language": detected_lang,
             "intent": intent,
             "target_action": target_action,
             "priority": priority,
             "entities": entities,
             "action_prompt": f"Process {target_action} request for user inquiry.",
             "reply_text": reply,
-            "confidence_score": 0.80
+            "confidence_score": 0.85
         }
 
     def _generate_contextual_fallback_reply(self, data: Dict[str, Any], raw_text: str) -> str:
@@ -484,9 +545,22 @@ class SarvamVoiceLayer:
         order_id = entities.get("order_id")
         amount = entities.get("amount")
         action = data.get("target_action")
+        lang = data.get("detected_language") or "en-IN"
 
-        amt_str = f"₹{amount}" if amount else "your payment"
+        amt_str = f"₹{amount:,.0f}" if amount else ("your payment" if not lang.startswith("hi") else "आपका भुगतान")
         ord_str = f" for order {order_id}" if order_id else ""
+
+        if lang.startswith("hi"):
+            if action == "payment_recovery":
+                ord_hi = f" (ऑर्डर {order_id})" if order_id else ""
+                return f"हम आपके {amt_str}{ord_hi} के भुगतान की स्थिति Cashfree पर जांच रहे हैं। पुष्टि होते ही आपको सूचित किया जाएगा।"
+            elif action == "reconciliation":
+                return f"आपके लेनदेन का हमारे लेजर और Cashfree रिकॉर्ड के साथ मिलान (reconciliation) शुरू कर दिया गया है।"
+            elif action == "leakage_detection":
+                return f"लेनदेन और MDR शुल्कों की समीक्षा की जा रही है।"
+            elif action == "payout_management":
+                return f"Cashfree पेआउट और लाभार्थी विवरण की पुष्टि की जा रही है।"
+            return "आपका संदेश प्राप्त हुआ है, हमारी टीम विवरण की जांच कर रही है।"
 
         if action == "payment_recovery":
             return f"I'm checking the status of {amt_str}{ord_str} with Cashfree right now. If the payment failed, I will provide a direct recovery link immediately."
@@ -505,19 +579,24 @@ class SarvamVoiceLayer:
         input_type: str,
         sender_phone: Optional[str],
         error_message: str,
-        generate_audio: bool = False
+        generate_audio: bool = False,
+        language_code: Optional[str] = "en-IN"
     ) -> Dict[str, Any]:
-        reply_text = "We encountered a temporary processing issue. Please try sending your message again."
+        lang = language_code or "en-IN"
+        if lang.startswith("hi"):
+            reply_text = "तकनीकी समस्या के कारण प्रक्रिया पूरी नहीं हो सकी। कृपया अपना संदेश दोबारा भेजें।"
+        else:
+            reply_text = "We encountered a temporary processing issue. Please try sending your message again."
         audio_b64 = None
         if generate_audio:
-            audio_b64 = self._synthesize_audio_safely(reply_text, "en-IN")
+            audio_b64 = self._synthesize_audio_safely(reply_text, lang)
 
         return {
             "success": False,
             "input_type": input_type,
             "sender_phone": sender_phone,
             "transcript": "",
-            "detected_language": "en-IN",
+            "detected_language": lang,
             "reply_mode": "voice" if generate_audio else "text",
             "reply_text": reply_text,
             "reply_audio_base64": audio_b64,
